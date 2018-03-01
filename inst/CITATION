@@ -1,0 +1,14 @@
+citHeader("To cite cosa in publications use:")
+
+citEntry(entry = "Unpublished",
+  title        = "{cosa}: Constrained Optimal Sample Allocation",
+  author       = as.person("Metin Bulus"),
+  note         = "R package version 1.1.0",
+  year         = 2018
+ ,
+
+  textVersion  =
+  paste("Bulus, M.(2018).",
+        "cosa:  Constrained Optimal Sample Allocation.",
+        "R package version 1.1.0.")
+)

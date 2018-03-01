@@ -55,14 +55,22 @@
   }
   if(is.null(rhots)) {
     if(dists == "normal") {
+      if(any(!is.numeric(c(k1, k2)))){
+        stop("Incorrect value for truncation points", call. = FALSE)
+      }
       d <- .de(.rhotstn(k1, k2, p))
     } else if(dists == "uniform") {
       if(k1 != -6 | k2 != 6) {
         warning("k1 and/or k2 will be ignored.", call. = FALSE)
       }
       d <- .de(.rhotsu(p))
+    } else {
+      stop("Incorrect value for 'dists'", call. = FALSE)
     }
   } else if(!is.null(rhots)) {
+    if(any(rhots < 0) || any(rhots > 1)) {
+      stop("Incorrect value for [0, 1] bounded argument", call. = FALSE)
+    }
     d <- .de(rhots)
   }
   return(d)
@@ -72,12 +80,12 @@
 .cosa <- function(cn1 = 0, cn2 = 0, cn3 = 0, cn4 = 0, cost = NULL,
                   n1 = NULL, n2 = NULL, n3 = NULL, n4 = NULL, p = NULL, n0, p0,
                   constrain, local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
-                  rhots, k1, k2, dists,
-                  power, es, alpha, two.tailed,
+                  rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
+                  power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                   rho2, rho3, rho4, omega2, omega3, omega4,
                   g1 = 0, g2 = 0, g3 = 0, g4 = 0,
                   r21 = 0, r22 = 0, r23 = 0, r24 = 0,
-                  r2t2 = 0, r2t3 = 0, r2t4 = 0) {
+                  r2t2 = 0, r2t3 = 0, r2t4 = 0, round = TRUE) {
 
   .df <- get(".df", parent.frame())
   .sse <- get(".sse", parent.frame())
@@ -85,16 +93,29 @@
   lb <- get("lb", parent.frame())
   fun <- get("fun", parent.frame())
 
-  d <- .d(p, k1, k2, dists, rhots)
   if(!is.null(rhots)) {
-    if(rhots != 0 & is.null(p)) {
-      stop("'p' cannot be NULL in regression discontinuity design. Specify 'rhots = 0' ", call. = FALSE)
-    } else if(rhots == 0) {
-      cat(" Results are equivalent to random assignment design \n")
+    if(rhots == 0) {
+      cat("\nResults are equivalent to corresponding random assignment designs \n")
+      if(!is.null(p)){
+        if(any(p < .01) || any(p > .99) || !is.numeric(p) || length(p) > 2){
+          stop("Incorrect value for [.01, .99] bounded argument 'p'", call. = FALSE)
+        }
+      }
+    }else{
+      if(any(p < .01) || any(p > .99) || !is.numeric(p) || length(p) > 1){
+        stop("Incorrect value for [.01, .99] bounded argument 'p'", call. = FALSE)
+      }
     }
-  } else if(is.null(rhots) & is.null(p)) {
-    stop("'p' cannot be NULL in regression discontinuity design. Specify 'rhots = 0' ", call. = FALSE)
+  }else{
+    if(is.null(p)){
+      stop("'p' cannot be NULL in regression discontinuity designs", call. = FALSE)
+    }else{
+      if(any(p < .01) || any(p > .99) || !is.numeric(p) || length(p) > 1){
+        stop("Incorrect value for [.01, .99] bounded argument 'p'", call. = FALSE)
+      }
+    }
   }
+  d <- .d(p, k1, k2, dists, rhots)
 
   fun_parsed <- scan(text = fun, what = "character", sep=".", quiet = TRUE)
   rlevel <- as.numeric(substr(fun, nchar(fun), nchar(fun)))
@@ -193,31 +214,45 @@
     return(eval(.sse)^2)
   }
 
+  # starting values
+  .start <- function(ss){
+    n1 <- ss[1]
+    n2 <- ss[2]
+    if(nlevels >= 3){
+      n3 <- ss[3]
+    }
+    if(nlevels == 4){
+      n4 <- ss[4]
+    }
+    p <- ss[nlevels + 1]
+    return(.power(es = es,  alpha = alpha,
+                  sse = eval(.sse), df = eval(.df),
+                  two.tailed = two.tailed) - .95)
+  }
+
   cost.list <- list(cn1, cn2, cn3, cn4)
   cost.names <- c("cn1", "cn2", "cn3", "cn4")
   cost.lengths <- unlist(lapply(cost.list, length))
-  if(rlevel < nlevels & any(cost.lengths[(rlevel+1):nlevels] == 2)) {
+  if(rlevel < nlevels & any(cost.lengths[(rlevel + 1):nlevels] == 2)) {
     stop("Unequal cost applies to levels at or below randomization (or discontinuity) level", call.=FALSE)
   }
 
-  if(any(cost.lengths[1:rlevel] > 2)) {
-    stop("Marginal costs cannot have a length greater than two", call.=FALSE)
+  if(any(cost.lengths[1:rlevel] > 2) || !is.numeric(unlist(cost.list))) {
+    stop("Incorrect value for marginal cost arguments", call.=FALSE)
   }
 
   if(!is.null(cost)) {
-    if(length(cost)>1) {
-      stop("Total cost cannot have a length greater than one", call.=FALSE)
-    }else if(cost<0) {
-      stop(" Total cost cannot have a negative value", call.=FALSE)
+    if(length(cost) > 1 || !is.numeric(cost) || cost < 0) {
+      stop("Incorrect value for argument 'cost'", call.=FALSE)
     }
   }
 
-  fn.constr <- switch(constrain,
+  fn.constr <- switch(tolower(constrain),
                       "power" = .eq.power,
                       "es" = .eq.es,
                       "cost" = .eq.cost,
-                      stop("Unknown constrain", call. = FALSE))
-  fn.min <- switch(constrain,
+                      stop("Incorrect constraint", call. = FALSE))
+  fn.min <- switch(tolower(constrain),
                    "power" = .min.cost,
                    "es" = .min.cost,
                    "cost" = .min.var)
@@ -229,10 +264,17 @@
     cn2 <- c(cn2, cn2)
   }
   if(rlevel >= 3 & length(cn3) == 1) {
-    cn3 <- c(cn3,cn3)
+    cn3 <- c(cn3, cn3)
   }
   if(rlevel == 4 & length(cn4) == 1) {
     cn4 <- c(cn4, cn4)
+  }
+
+  if(p0 < .01 || p0 > .99 || !is.numeric(p0) || length(p0) != 1) {
+    stop("Incorrect value for argment 'p0'",  call. = FALSE)
+  }
+  if(any(n0 < 0) || !is.numeric(n0) || length(n0) != nlevels) {
+    stop("Incorrect value for argument 'n0'",  call. = FALSE)
   }
 
   # constraints on one sample sizes and p
@@ -242,7 +284,11 @@
   n10  <- ifelse(!is.null(n1), mean(n1), n0[1])
   n1lb <- ifelse(!is.null(n1), min(n1), lb[1])
   n1ub <- ifelse(!is.null(n1), max(n1), Inf)
-  if(nlevels == 2){
+  if(nlevels == 1){
+    ss0  <- c(n10,p0)
+    sslb <- c(n1lb,plb)
+    ssub <- c(n1ub,pub)
+  }else if(nlevels == 2){
     n20  <- ifelse(!is.null(n2), mean(n2), n0[2])
     n2lb <- ifelse(!is.null(n2), min(n2), lb[2])
     n2ub <- ifelse(!is.null(n2), max(n2), Inf)
@@ -274,39 +320,53 @@
     ssub <- c(n1ub,n2ub,n3ub,n4ub,pub)
   }
 
+  if(any(ss0 < sslb)) {
+    stop("Starting values cannot be smaller than lower bounds",  call. = FALSE)
+  }
+  if(constrain == "cost") {
+    ss0 <- auglag(x0 = ss0, fn = .min.cost, heq = .start,
+                  localsolver = "LBFGS", localtol = 1e-8,
+                  lower = sslb, upper = ssub)$par
+  }
+
+  local.solver <- toupper(local.solver)
   # constrained optimal sample allocation
-  #local.solver <- c("SLSQP", "LBFGS", "MMA", "COBYLA")
   i <- 1; conv <- FALSE
   while(i <= length(local.solver) & conv == FALSE){
-    nlopt.ss <- nloptr::auglag(x0 = ss0, fn = fn.min, heq = fn.constr,
-                               localsolver = local.solver[i], localtol = 1e-3,
-                               lower = sslb, upper = ssub)
-    if(nlopt.ss$par[nlevels] %% 1 != 0) {
-      ss0[nlevels] <- sslb[nlevels] <- ssub[nlevels] <- round(nlopt.ss$par[nlevels])
-      nlopt.ss <- nloptr::auglag(x0 = ss0, fn = fn.min, heq = fn.constr,
-                                 localsolver = local.solver[i], localtol = 1e-3,
-                                 lower = sslb, upper = ssub)
+    if(!local.solver[i] %in% c("LBFGS", "SLSQP", "MMA", "COBYLA")) {
+      stop("Incorrect value for argument 'local.solver'",  call. = FALSE)
+    }
+    nlopt.ss <- auglag(x0 = ss0, fn = fn.min, heq = fn.constr,
+                       localsolver = local.solver[i], localtol = 1e-8,
+                       lower = sslb, upper = ssub)
+    if(length(intersect(ss0, round(nlopt.ss$par, 1))) < nlevels - 1){
+      if(nlopt.ss$par[nlevels] %% 1 != 0) {
+        ss0[nlevels] <- sslb[nlevels] <- ssub[nlevels] <- round(nlopt.ss$par[nlevels])
+        nlopt.ss <- auglag(x0 = ss0, fn = fn.min, heq = fn.constr,
+                           localsolver = local.solver[i], localtol = 1e-8,
+                           lower = sslb, upper = ssub)
+      }
     }
     if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
       conv <- FALSE
-      cat(" Solution is not feasible with ", local.solver[i], ". Trying next algorithm \n", sep = "")
+      cat("Solution is not feasible with ", local.solver[i], ". Trying next algorithm \n", sep = "")
     } else {
       conv <- TRUE
-      cat(" Solution converged with", local.solver[i], "\n")
+      cat("Solution converged with", local.solver[i], "\n")
       ss1 <- nlopt.ss$par
     }
     i <- i+1
   }
 
   if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
-    message("Consider relaxing one of the fixed sample size in the form c(x-.444, x+.444)")
+    message("Consider changing starting values, or relax one of the fixed sample size in the form c(x-.444, x+.444)")
     stop("Solution is not feasible. Change default settings", call.=FALSE)
   }
 
-  col.names <- c(c(ifelse(!is.null(n1), ifelse(length(n1) == 2, "<n1<", "[n1]"),"n1"),
-                   ifelse(!is.null(n2), ifelse(length(n2) == 2, "<n2<", "[n2]"),"n2"),
-                   ifelse(!is.null(n3), ifelse(length(n3) == 2, "<n3<", "[n3]"),"n3"),
-                   ifelse(!is.null(n4), ifelse(length(n4) == 2, "<n4<", "[n4]"),"n4"))[1:nlevels],
+  col.names <- c(c(ifelse(!is.null(n1), ifelse(length(n1) >= 2, "<n1<", "[n1]"),"n1"),
+                   ifelse(!is.null(n2), ifelse(length(n2) >= 2, "<n2<", "[n2]"),"n2"),
+                   ifelse(!is.null(n3), ifelse(length(n3) >= 2, "<n3<", "[n3]"),"n3"),
+                   ifelse(!is.null(n4), ifelse(length(n4) >= 2, "<n4<", "[n4]"),"n4"))[1:nlevels],
                  ifelse(!is.null(p), ifelse(length(p) == 2, "<p<", "[p]"),"p"),
                  ifelse(constrain == "cost","[cost]","cost"),
                  ifelse(constrain == "es","[es]","es"),
@@ -314,97 +374,101 @@
                  paste0(100 * round((1 - alpha), 2), "%ucl"),
                  ifelse(constrain == "power","[power]","power"))
 
-  #ss1 <- nlopt.ss$par
-  # exact solution
-  est.mlu.power <- .mlu.pwr(ss1)
-  exact.cosa <- cbind(t(ss1), .min.cost(ss1), est.mlu.power[1], est.mlu.power[2], est.mlu.power[3], est.mlu.power[4])
-  colnames(exact.cosa) <-  col.names
+  if(round) {
+    ss1[nlevels] <- round(ss1[nlevels])
+    if(nlevels==2){
+      ss1[1] <- round(prod(ss1[1:2]))/ss1[2]
+    }else if(nlevels==3){
+      ss1[2] <- round(prod(ss1[2:3]))/ss1[3]
+      ss1[1] <- round(prod(ss1[1:3]))/prod(ss1[2:3])
+    }else if(nlevels==4){
+      ss1[3] <- round(prod(ss1[3:4]))/ss1[4]
+      ss1[2] <- round(prod(ss1[2:4]))/prod(ss1[3:4])
+      ss1[1] <- round(prod(ss1[1:4]))/prod(ss1[2:4])
+    }
+    if(nlevels==rlevel){
+      ss1[nlevels+1] <- round(ss1[nlevels+1]*ss1[rlevel]) / ss1[rlevel]
+    }else{
+      ss1[nlevels+1] <- round(ss1[nlevels+1]*round(prod(ss1[rlevel:nlevels]))) / round(prod(ss1[rlevel:nlevels]))
+    }
 
-  # top-down rounded solution
-  ss1[nlevels] <- round(ss1[nlevels])
-  if(nlevels==2){
-    ss1[1] <- round(prod(ss1[1:2]))/ss1[2]
-  }else if(nlevels==3){
-    ss1[2] <- round(prod(ss1[2:3]))/ss1[3]
-    ss1[1] <- round(prod(ss1[1:3]))/prod(ss1[2:3])
-  }else if(nlevels==4){
-    ss1[3] <- round(prod(ss1[3:4]))/ss1[4]
-    ss1[2] <- round(prod(ss1[2:4]))/prod(ss1[3:4])
-    ss1[1] <- round(prod(ss1[1:4]))/prod(ss1[2:4])
+    est.mlu.power <- .mlu.pwr(ss1)
+    cosa <- cbind(t(ss1), .min.cost(ss1), est.mlu.power[1], est.mlu.power[2], est.mlu.power[3], est.mlu.power[4])
+    colnames(cosa) <-  col.names
+  } else {
+    est.mlu.power <- .mlu.pwr(ss1)
+    cosa <- cbind(t(ss1), .min.cost(ss1), est.mlu.power[1], est.mlu.power[2], est.mlu.power[3], est.mlu.power[4])
+    colnames(cosa) <-  col.names
   }
-  if(nlevels==rlevel){
-    ss1[nlevels+1] <- round(ss1[nlevels+1]*ss1[rlevel]) / ss1[rlevel]
+
+  return(invisible(cosa))
+}
+
+# object conversion
+.cosa2mdes <- function(x){
+  if(inherits(x, "cosa")){
+    design <- class(x)[2]
+    nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
+    fun <- paste("mdes", class(x)[2], sep = ".")
+    parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    parms$p <- x$cosa[nlevels + 1]
+    parms$n1 <- x$cosa[1]
+    if(nlevels >= 2) {
+      parms$n2 <- x$cosa[2]
+    }
+    if(nlevels >= 3) {
+      parms$n3 <- x$cosa[3]
+    }
+    if(nlevels == 4) {
+      parms$n4 <- x$cosa[4]
+    }
+    return(invisible(do.call(fun, parms)))
   }else{
-    ss1[nlevels+1] <- round(ss1[nlevels+1]*round(prod(ss1[rlevel:nlevels]))) / round(prod(ss1[rlevel:nlevels]))
+    stop("x should be an object returned from COSA functions", call.=FALSE)
   }
-
-  est.mlu.power <- .mlu.pwr(ss1)
-  round.cosa <- cbind(t(ss1), .min.cost(ss1), est.mlu.power[1], est.mlu.power[2], est.mlu.power[3], est.mlu.power[4])
-  colnames(round.cosa) <-  col.names
-
-  cat("\n Rounded solution: \n")
-  cat(" ----------------------------------------------- \n")
-  print(as.data.frame(round(round.cosa,3)), row.names=FALSE)
-  cat(" ----------------------------------------------- \n")
-  cat(" Per unit marginal costs: \n")
-  cat(" Level 1 treatment:", cn1[1] ,
-      "\n Level 1 control:", cn1[2], "\n")
-  if(nlevels >= 2 & rlevel >= 2){
-    cat(" Level 2 treatment:", cn2[1] ,
-        "\n Level 2 control:", cn2[2], "\n")
-  }else if(nlevels >= 2 & rlevel < 2){
-    cat(" Level 2:", cn2[1], "\n")
-  }
-  if(nlevels >= 3 & rlevel >= 3){
-    cat(" Level 3 treatment:", cn3[1] ,
-        "\n Level 3 control:", cn3[2], "\n")
-  }else if(nlevels >= 3 & rlevel < 3){
-    cat(" Level 3:", cn3[1], "\n")
-  }
-  if(nlevels >= 4 & rlevel >= 4){
-    cat(" Level 4 treatment:", cn4[1] ,
-        "\n Level 4 control:", cn4[2], "\n")
-  }else if(nlevels >= 4 & rlevel < 4){
-    cat(" Level 4:", cn4[1], "\n")
-  }
-  cat(" ----------------------------------------------- \n")
-  cat(" MDES = ", round(est.mlu.power[1], 3), " (with power = ", round(power,3)*100,
-      ") \n power = ", round(est.mlu.power[4], 3), " (for ES = ", round(es,3), ") \n", sep="")
-  cat(" ----------------------------------------------- \n")
-  cat(" []: point constrained (fixed) \n <<: bound constrained \n")
-
-  # output
-  cosa.out <- list(parms = get("parms", parent.frame()),
-                   exact.cosa = exact.cosa,
-                   round.cosa = round.cosa
-  )
-
-  return(invisible(cosa.out))
 }
 
-# summarize mdes output
-.summarize.mdes <- function(power, alpha, sse, df, two.tailed, mdes) {
-  cat("\n Minimum detectable effect size: \n")
-  cat(" --------------------------------------- \n")
-  cat(" MDES is ", round(mdes[1], 3), " ", 100 * (1 - round(alpha, 2)),
-      "% CI [", round(mdes[2], 3), ",", round(mdes[3], 3), "] with ",
-      round(power,3)*100, "% power \n", sep="")
-  cat(" --------------------------------------- \n")
-  cat(" Degrees of freedom:", df, "\n Standardized standard error:", round(sse, 3),
-      "\n Type I error rate:", alpha, "\n Type II error rate:", round(1 - power, 3),
-      "\n Two-tailed test:", two.tailed)
+.power2mdes <- function(x){
+  if(inherits(x, "power")){
+    fun <- paste("mdes", class(x)[2], sep = ".")
+    parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    parms$power <- x$power
+    return(invisible(do.call(fun, parms)))
+  }else{
+    stop("x should be an object returned from statistical power functions", call.=FALSE)
+  }
 }
 
-# summarize power output
-.summarize.power <- function(es, alpha, sse, df, two.tailed, power) {
-  mlu <- .mdes(power, alpha, sse, df, two.tailed)
-  cat("\n Statistical power: \n")
-  cat(" --------------------------------------- \n")
-  cat(" ", round(power, 3) * 100, "% power to detect an ES of ",
-      round(mlu[1], 3), " ",  100 * (1 - round(alpha, 2)),
-      "% CI [", round(mlu[2], 3), ",", round(mlu[3],3),"] \n", sep="")
-  cat(" --------------------------------------- \n")
-  cat(" Degrees of freedom:", df, "\n Standardized standard error:", round(sse, 3),
-      "\n Type I error rate:", alpha, "\n Type II error rate:", round(1 - power, 3),
-      "\n Two-tailed test:", two.tailed)
+.cosa2power <- function(x){
+  if(inherits(x, "cosa")){
+    design <- class(x)[2]
+    nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
+    fun <- paste("power", class(x)[2], sep = ".")
+    parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    parms$p <- x$cosa[nlevels + 1]
+    parms$n1 <- x$cosa[1]
+    if(nlevels >= 2) {
+      parms$n2 <- x$cosa[2]
+    }
+    if(nlevels >= 3) {
+      parms$n3 <- x$cosa[3]
+    }
+    if(nlevels == 4) {
+      parms$n4 <- x$cosa[4]
+    }
+    return(invisible(do.call(fun, parms)))
+  }else{
+    stop("x should be an object returned from COSA functions", call.=FALSE)
+  }
+}
+
+.mdes2power <- function(x){
+  if(inherits(x, "mdes")){
+    fun <- paste("power", class(x)[2], sep = ".")
+    parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    parms$es<- x$mdes[1]
+    return(invisible(do.call(fun, parms)))
+  }else{
+    stop("x should be an object returned from MDES functions", call.=FALSE)
+  }
 }

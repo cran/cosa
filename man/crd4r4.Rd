@@ -6,14 +6,14 @@
 \title{Cluster-level Regression Discontinuity (Four-level Design, Discontinuity at Level 1)}
 
 \description{
-  Use \code{mdes.crd4r4()} to calculate minimum detectable effect size, \code{power.crd4r4()} to calculate statistical power, and \code{cosa.crd4r4()} for constrained optimal sample allocation. COSA can be found in the following forms; (i) under budgetary constraints given marginal costs per unit, (ii) under power or MDES contraints given marginal costs per unit, and (iii) under sample size contraints for one or more levels along with (i) or (ii).
+  Use \code{mdes.crd4r4()} to calculate minimum detectable effect size, \code{power.crd4r4()} to calculate statistical power, and \code{cosa.crd4r4()} for constrained optimal sample allocation.
 }
 
 \usage{
  cosa.crd4r4(cn1 = 0, cn2 = 0, cn3 = 0, cn4 = 0, cost = NULL,
             n1 = NULL, n2 = NULL, n3 = NULL, n4 = NULL, p = NULL,
-            n0 = c(10, 3, 100, 10), p0 = .50, constrain = "power",
-            local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
+            n0 = c(10, 3, 100, 5 + g4), p0 = .50, constrain = "power",
+            round = TRUE, local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
             rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
             power = .80, es = .25, alpha = .05, two.tailed = TRUE,
             rho2, rho3, rho4, g4 = 0, r21 = 0, r22 = 0, r23 = 0, r24 = 0)
@@ -36,26 +36,27 @@
   \item{cn3}{marginal cost per level 3 unit in treatment and control conditions.}
   \item{cn4}{marginal cost per level 4 unit in treatment and control conditions.}
   \item{cost}{total cost or budget.}
-  \item{n1}{harmonic mean (or average) of level 1 units across level 2 units.}
-  \item{n2}{harmonic mean (or average) of level 2 units across level 3 units.}
-  \item{n3}{harmonic mean (or average) of level 3 units across level 4 units.}
+  \item{n1}{average number of level 1 units per level 2 unit.}
+  \item{n2}{average number of level 2 units per level 3 unit.}
+  \item{n3}{average number of level 3 units per level 4 unit.}
   \item{n4}{number of level 4 units.}
   \item{p}{proportion of level 4 units in treatment condition.}
-  \item{n0}{starting values for \code{n1, n2, n3, n4}.}
-  \item{p0}{starting value for \code{p}, if \code{rhots = 0} and \code{p = NULL}}
+  \item{n0}{vector of starting values for \code{n1, n2, n3, n4} (positional). Starting values are replaced with averages when sample sizes are constrained by bounds.}
+  \item{p0}{starting value for \code{p} when \code{rhots = 0} and \code{p = NULL}. Starting value is replaced with average when \code{p} is constrained by bounds.}
   \item{power}{statistical power (1 - \eqn{\beta}).}
   \item{es}{effect size (Cohen's d).}
   \item{alpha}{probability of type I error (\eqn{\alpha}).}
   \item{two.tailed}{logical; \code{TRUE} for two-tailed hypothesis testing.}
   \item{constrain}{character; \code{"cost"}, \code{"power"}, or \code{"mdes"}.}
+  \item{round}{logical; \code{TRUE} for rounded COSA solution.}
   \item{local.solver}{subset of \code{c("LBFGS", "SLSQP", "MMA", "COBYLA")}.}
   \item{rhots}{correlation between the treatment and the scoring variable. Specify \code{rhots = 0} to obtain results equivalent to random assignment designs.}
-  \item{k1}{left truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is specified.}
-  \item{k2}{right truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is specified.}
-  \item{dists}{distribution of the scoring variable; \code{"normal"} or \code{"uniform"}.}
-  \item{rho2}{proportion of variance in the outcome between level 2 units.}
-  \item{rho3}{proportion of variance in the outcome between level 3 units.}
-  \item{rho4}{proportion of variance in the outcome between level 4 units.}
+  \item{k1}{left truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is not \code{NULL} or \code{dists = "uniform"}.}
+  \item{k2}{right truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is not \code{NULL} or \code{dists = "uniform"}.}
+  \item{dists}{distribution of the scoring variable; \code{"normal"} or \code{"uniform"}. By default, \code{dists = "normal"} specification implies a truncated normal distribution with \code{k1 = -6} and \code{k2 = 6}.}
+  \item{rho2}{proportion of variance in the outcome between level 2 units (unconditional ICC2).}
+  \item{rho3}{proportion of variance in the outcome between level 3 units (unconditional ICC3).}
+  \item{rho4}{proportion of variance in the outcome between level 4 units (unconditional ICC4).}
   \item{g4}{number of covariates at level 4.}
   \item{r21}{proportion of level 1 variance in the outcome explained by level 1 covariates.}
   \item{r22}{proportion of level 2 variance in the outcome explained by level 2 covariates.}
@@ -65,29 +66,28 @@
 
 \value{
   \item{parms}{list of parameters used in the function.}
-  \item{exact.cosa}{exact solution, total cost, [minimum detectable] effect size and (1 - \eqn{\alpha})\% confidence limits, and statistical power.}
-  \item{round.cosa}{rounded solution, total cost, [minimum detectable] effect size and (1 - \eqn{\alpha})\% confidence limits, and statistical power.}
+  \item{df}{degrees of freedom.}
+  \item{sse}{standardized standard error.}
+  \item{cosa}{constrained optimal sample allocation.}
   \item{mdes}{minimum detectable effect size and (1 - \eqn{\alpha})\% confidence limits.}
   \item{power}{statistical power (1 - \eqn{\beta})}
 }
 
 \examples{
-# cost constrained
+# cost constrained - optimize n3 and n4
 cosa.crd4r4(constrain = "cost", cost = 50000,
             cn1 = 2, cn2 = c(10, 8), cn3 = 20, cn4 = c(50,40),
             es = .20, rho2 = .20, rho3 = .10, rho4 = .05,
             r21 = .20, r22 = .30, r23 = .40, r24 = .50,
-            g4 = 1, p = .50, n1 = 25, n2 = 3)
+            g4 = 1, p = .50, n1 = 25, n2 = 3, n3 = NULL, n4 = NULL)
 
-# MDES
+# minimum detectable effect size
 mdes.crd4r4(power = .80, rho2 = .20, rho3 = .10, rho4 = .05,
             r21 = .20, r22 = .30, r23 = .40, r24 = .50,
             g4 = 1, p = .50, n1 = 10, n2 = 3, n3 = 51.7, n4 = 10)
 
-# power
+# statistical power
 power.crd4r4(es = .20, rho2 = .20, rho3 = .10, rho4 = .05,
              r21 = .20, r22 = .30, r23 = .40, r24 = .50,
              g4 = 1, p = .50, n1 = 10, n2 = 3, n3 = 51.7, n4 = 10)
 }
-
-\keyword{cluster-level regression discontinuity}

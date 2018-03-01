@@ -1,10 +1,10 @@
-mdes.crd3r3 <- function(power = .80, alpha = .05, two.tailed = TRUE,
+mdes.bcrd4f3 <- function(power = .80, alpha = .05, two.tailed = TRUE,
                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                         rho2, rho3, r21 = 0, r22 = 0, r23 = 0, g3 = 0,
-                        p = .50, n1, n2, n3) {
+                        p = .50, n1, n2, n3, n4) {
 
-  ss <- c(n1, n2, n3, g3)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 4){
+  ss <- c(n1, n2, n3, n4, g3)
+  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 5){
     stop("Incorrect value for sample size or number of covariates", call. = FALSE)
   }
 
@@ -27,11 +27,11 @@ mdes.crd3r3 <- function(power = .80, alpha = .05, two.tailed = TRUE,
   }
 
 
-  df <- n3 - g3 - 2
+  df <- n3 - g3 - 2 - (n3 - 2) * (1 - n4)
   d <- .d(p, k1, k2, dists, rhots)
-  sse <- sqrt(d * (rho3 * (1 - r23) / (p * (1 - p) * n3) +
-                rho2 * (1 - r22) / (p * (1 - p) * n3 * n2) +
-               (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n3 * n2 * n1)))
+  sse <- sqrt(d * (rho3 * (1 - r23) / (p * (1 - p) * n4 * n3) +
+                rho2 * (1 - r22) / (p * (1 - p) * n4 * n3 * n2) +
+               (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n4 * n3 * n2 * n1)))
 
   mdes <- .mdes(power, alpha, sse, df, two.tailed)
   colnames(mdes) <- c("mdes", paste0(100 * (1 - round(alpha, 2)), "%lcl"),
@@ -39,26 +39,27 @@ mdes.crd3r3 <- function(power = .80, alpha = .05, two.tailed = TRUE,
   mdes.out <- list(parms = list(power = power, alpha = alpha, two.tailed = two.tailed,
                                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                                 rho2 = rho2, rho3 = rho3, r21 = r21, r22 = r22, r23 = r23,
-                                g3 = g3, p = p, n1 = n1, n2 = n2, n3 = n3),
+                                g3 = g3, p = p, n1 = n1, n2 = n2, n3 = n3, n4 = n4),
                    df = df,
                    sse = sse,
                    mdes = mdes)
   print(round(mdes, 3))
-  class(mdes.out) <- c("mdes", "crd3r3")
+  class(mdes.out) <- c("mdes", "bcrd4f3")
   return(invisible(mdes.out))
 }
 
 # example
 # mdes.crd3r3(rho3 = .06, rho2 = .17, n1 = 15, n2 = 3, n3 = 60)
+# mdes.bcrd4f3(rho3 = .06, rho2 = .17, n1 = 15, n2 = 3, n3 = 60, n4 = 1)
 
 
-power.crd3r3 <- function(es = .25, alpha = .05, two.tailed = TRUE,
+power.bcrd4f3 <- function(es = .25, alpha = .05, two.tailed = TRUE,
                          rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                          rho2, rho3, r21 = 0, r22 = 0, r23 = 0, g3 = 0,
-                         p = .50, n1, n2, n3) {
+                         p = .50, n1, n2, n3, n4) {
 
-  ss <- c(n1, n2, n3, g3)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 4){
+  ss <- c(n1, n2, n3, n4, g3)
+  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 5){
     stop("Incorrect value for sample size or number of covariates", call. = FALSE)
   }
 
@@ -84,38 +85,40 @@ power.crd3r3 <- function(es = .25, alpha = .05, two.tailed = TRUE,
     stop("Incorrect value for 'es'", call. = FALSE)
   }
 
-  df <- n3 - g3 - 2
+  df <- n3 - g3 - 2 - (n3 - 2) * (1 - n4)
   d <- .d(p, k1, k2, dists, rhots)
-  sse <- sqrt(d * (rho3 * (1 - r23) / (p * (1 - p) * n3) +
-                    rho2 * (1 - r22) / (p * (1 - p) * n3 * n2) +
-                    (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n3 * n2 * n1)))
+  sse <- sqrt(d * (rho3 * (1 - r23) / (p * (1 - p) * n4 * n3) +
+                     rho2 * (1 - r22) / (p * (1 - p) * n4 * n3 * n2) +
+                     (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n4 * n3 * n2 * n1)))
 
   power <- .power(es, alpha, sse, df, two.tailed)
   power.out <-  list(parms = list(es = es, alpha = alpha, two.tailed = two.tailed,
                                   rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                                   rho2 = rho2, rho3 = rho3, r21 = r21, r22 = r22, r23 = r23,
-                                  g3 = g3, p = p, n1 = n1, n2 = n2, n3 = n3),
+                                  g3 = g3, p = p, n1 = n1, n2 = n2, n3 = n3, n4 = n4),
                      df = df,
                      sse = sse,
                      power = power)
   names(power) <- "power"
   print(round(power, 3))
-  class(power.out) <- c("power", "crd3r3")
+  class(power.out) <- c("power", "bcrd4f3")
   return(invisible(power.out))
 }
 # example
 # power.crd3r3(es = .446, rho3 = .06, rho2 = .17, n1 = 15, n2 = 3, n3 = 60)
+# power.bcrd4f3(es = .446, rho3 = .06, rho2 = .17, n1 = 15, n2 = 3, n3 = 60, n4 = 1)
 
-cosa.crd3r3 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
-                        n1 = NULL, n2 = NULL, n3 = NULL, p = NULL, n0 = c(10, 3, 100 + g3), p0 = .50,
+cosa.bcrd4f3 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cn4 = 0, cost = NULL,
+                        n1 = NULL, n2 = NULL, n3 = NULL, n4 = NULL,
+                        p = NULL, n0 = c(10, 3, 100 + g3, 5), p0 = .50,
                         constrain = "power", round = TRUE,
                         local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                         power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                         rho2, rho3, g3 = 0, r21 = 0, r22 = 0, r23 = 0) {
 
-  ss <- c(n1, n2, n3, g3)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 7){
+  ss <- c(n1, n2, n3, n4, g3)
+  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 9){
     stop("Incorrect value for sample size or number of covariates", call. = FALSE)
   }
 
@@ -141,37 +144,41 @@ cosa.crd3r3 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
     stop("Incorrect value for 'es'", call. = FALSE)
   }
 
-  fun <- "cosa.crd3r3"
-  lb <- c(1, 1, g3 + 3)
+  fun <- "cosa.bcrd4f3"
+  lb <- c(1, 1, g3 + 3, 1)
 
-  .df <- quote(n3 - g3 - 2)
-  .sse <- quote(sqrt(d * (rho3 * (1 - r23) / (p * (1 - p) * n3) +
-                            rho2 * (1 - r22) / (p * (1 - p) * n3 * n2) +
-                            (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n3 * n2 * n1))))
-  .cost <- quote(n3 * (cn3[2] + p * (cn3[1] - cn3[2])) +
-                   n3 * n2 * (cn2[2] + p * (cn2[1] - cn2[2])) +
-                   n3 * n2 * n1 * (cn1[2] + p * (cn1[1] - cn1[2])))
+  .df <- quote(n3 - g3 - 2 - (n3 - 2) * (1 - n4))
+  .sse <- quote(sqrt(d * (rho3 * (1 - r23) / (p * (1 - p) * n4 * n3) +
+                            rho2 * (1 - r22) / (p * (1 - p) * n4 * n3 * n2) +
+                            (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n4 * n3 * n2 * n1))))
+  .cost <- quote(n4 * cn4 +
+                   n4 * n3 * (cn3[2] + p * (cn3[1] - cn3[2])) +
+                   n4 * n3 * n2 * (cn2[2] + p * (cn2[1] - cn2[2])) +
+                   n4 * n3 * n2 * n1 * (cn1[2] + p * (cn1[1] - cn1[2])))
 
-  cosa <- .cosa(cn1 = cn1, cn2 = cn2, cn3 = cn3, cost = cost,
+  cosa <- .cosa(cn1 = cn1, cn2 = cn2, cn3 = cn3, cn4 = cn4, cost = cost,
                 constrain = constrain, round = round, local.solver = local.solver,
                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                 rho2 = rho2, rho3 = rho3, r21 = r21, r22 = r22, r23 = r23,
-                g3 = g3, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2, n3 = n3)
-  cosa.out <- list(parms = list(cn1 = cn1, cn2 = cn2, cn3 = cn3, cost = cost,
+                g3 = g3, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2, n3 = n3, n4 = n4)
+  cosa.out <- list(parms = list(cn1 = cn1, cn2 = cn2, cn3 = cn3, cn4 = cn4, cost = cost,
                                 constrain = constrain, round = round, local.solver = local.solver,
                                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
                                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                                 rho2 = rho2, rho3 = rho3, r21 = r21, r22 = r22, r23 = r23,
-                                g3 = g3, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2, n3 = n3),
+                                g3 = g3, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2, n3 = n3, n4 = n4),
                    cosa = cosa)
   print(round(cosa, 3))
-  class(cosa.out) <- c("cosa", "crd3r3")
+  class(cosa.out) <- c("cosa", "bcrd4f3")
   return(invisible(cosa.out))
 }
 # examples
 # unconstrained
-# cosa.crd3r3(constrain = "power", rho2 = .20, rho3 = .10)
+# cosa.crd3r3(constrain = "power", rho2 = .20, rho3 = .10, p = .35)
+# cosa.bcrd4f3(constrain = "power", rho2 = .20, rho3 = .10, p = .35, n4 = 1)
 # constrained
 # cosa.crd3r3(cn1 = c(10,5), cn2 = c(20,10), cn3 = c(50,25), cost = 10000,
-#             constrain = "cost", rho2 = .20, rho3 = .10)
+#             constrain = "cost", rho2 = .20, rho3 = .10, p = .35)
+# cosa.bcrd4f3(cn1 = c(10,5), cn2 = c(20,10), cn3 = c(50,25), cost = 10000,
+#            constrain = "cost", rho2 = .20, rho3 = .10, p = .35, n4 = 1)

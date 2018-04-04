@@ -1,17 +1,18 @@
 # Constrained Optimal Sample Allocation
 
-**cosa** implements generalized constrained optimal sample allocation (COSA) framework for multilevel regression discontinuity studies and multilevel randomized trials with continuous outcomes. COSA functions are designed to optimize proportion of treatment allocation (`p`) and sample sizes (`n`) at one or more levels subject to budget, statistical power, or effect size constraints along with constraints on `n` and `p`. Constraints on `n` and `p` can be in the form of fixed values or bound constraints (or box constraints).
+**cosa** implements generalized constrained optimal sample allocation framework for two-group multilevel regression discontinuity studies and multilevel randomized trials with continuous outcomes. COSA functions are designed to optimize proportion of treatment allocation (`p`) and sample sizes (generically, `n`) at one or more levels subject to budget, statistical power, or effect size constraints along with constraints on `n` and `p`. Constraints on `n` and `p` can be in the form of fixed values or bound constraints (or box constraints).
 
-Note: `n` and `p` should be omitted (or specified as `NULL`) for optimization. `p` can only be optimized (or bound constrained) in multilevel randomized trials when treatment and control units have differing costs and when primary constraint is on the total cost. 
+Note: `n` and `p` should be omitted (or specified as `NULL`) for optimization. `p` can only be optimized (or bound constrained) in multilevel randomized trials when treatment and control units have differing costs. When the primary constraint is on statistical power or effect size providing marginal cost information will result in an cost-efficient sample allocation. When marginal cost information is not provided different starting values and algorithms may produce different results especially when sample sizes at two or more levels and `p` are optimized. Comparing several algorithms and starting values may faciliate decisions regarding sample sizes and `p`.
 
-To install the package:
+To install and load the package:
 ```{r}
 install.packages("cosa")
+library(cosa)
 ```
 
-Example COSA for cluster-level regression discontinuity (three-level design, treatment at level 3):
+Constrained optimal sample allocation in cluster-level regression discontinuity study where discontinuity resides at level 3:
+
 ```{r}
-library(cosa)
 # cost constrained - optimize n1 and n3
 rdd <- cosa.crd3r3(constrain = "cost", cost = 30000,
                    cn1 = 5, cn2 = 10, cn3 = c(50, 20),
@@ -22,7 +23,7 @@ summary(rdd)
 plot(rdd)
 ```
 
-Specifying `rhots = 0` produces result equivalent to corresponding random assignment design where also `p` can be optimized.
+Specifying `rhots = 0` produces result equivalent to corresponding random assignment design where also `p` can be optimized. `rhots = 0` means there is no relationship between the treatment [random] and the score variable. Constrained optimal sample allocation in three-level cluster randomized trial where treatment resides at level 3:
 
 ```{r}
 # cost constrained - optimize p, n1, n3

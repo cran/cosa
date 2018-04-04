@@ -5,7 +5,7 @@
 \title{Power and MDES Curves}
 
 \description{
-  Plots statistical power or minimum detectable effect size curves with (1-\eqn{\alpha}) \% confidence interval for the design of interest.
+  Plots statistical power or minimum detectable effect size curves with (1-\eqn{\alpha})x100 \% confidence interval for the design of interest.
 }
 
 \usage{

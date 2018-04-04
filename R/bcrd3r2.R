@@ -108,8 +108,8 @@ power.bcrd3r2 <- function(es = .25, alpha = .05, two.tailed = TRUE,
 # power.bcrd3r2(es = .305, rho2 = .10, rho3 = .20, omega3 = .30, n1 = 20, n2 = 44, n3 = 10)
 
 cosa.bcrd3r2 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
-                        n1 = NULL, n2 = NULL, n3 = NULL, p = NULL, n0 = c(10, 3, 100 + g3), p0 = .50,
-                        constrain = "power", round = TRUE,
+                        n1 = NULL, n2 = NULL, n3 = NULL, p = NULL, n0 = c(10, 3, 100 + g3), p0 = .499,
+                        constrain = "power", round = TRUE, max.power = FALSE,
                         local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                         power = .80, es = .25, alpha = .05, two.tailed = TRUE,
@@ -134,6 +134,10 @@ cosa.bcrd3r2 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
     stop("Non-logical value for 'two.tailed'", call. = FALSE)
   }
 
+  if(!is.logical(max.power) || length(max.power) > 1){
+    stop("Non-logical value for 'max.power'", call. = FALSE)
+  }
+
   if(any(n3 - g3 < 2)){
     stop("Insufficient sample size, increase 'n3'", call. = FALSE)
   }
@@ -153,8 +157,41 @@ cosa.bcrd3r2 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
                    n3 * n2 * (cn2[2] + p * (cn2[1] - cn2[2])) +
                    n3 * n2 * n1 * (cn1[2] + p * (cn1[1] - cn1[2])))
 
+  .var.jacob <- expression(
+    c(
+      -d * (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n2 * n3 * n1^2),
+
+      -d * rho2 * (1 - r22) / (p * (1 - p) * n2^2 * n3) -
+        d * (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n2^2 * n3 * n1),
+
+      -rho3 * omega3 * (1 - r2t3) / n3^2 -
+        d * rho2 * (1 - r22) / (p * (1 - p) * n2 * n3^2) -
+        d * (1 - rho3 - rho2) * (1 - r21) / (p * (1 - p) * n2 * n3^2 * n1),
+
+      -(1 - 2 * p) * d * rho2 * (1 - r22) / ((1 - p)^2 * p^2 * n2 * n3) -
+        (1 - 2 * p) * d * (1 - rho3 - rho2) * (1 - r21) / ((1 - p)^2 * p^2 * n2 * n3 * n1)
+    )
+  )
+
+  .cost.jacob <- expression(
+    c(
+      n3 * n2 * (p * cn1[1] + (1 - p) * cn1[2]),
+
+      n3 * (p * cn2[1] + (1 - p) * cn2[2]) +
+        n3 * n1 * (p * cn1[1] + (1 - p) * cn1[2]),
+
+      cn3 +
+        n2 * (p * cn2[1] + (1 - p) * cn2[2]) +
+        n2 * n1 * (p * cn1[1] + (1 - p) * cn1[2]),
+
+      n3 * n2 * (cn2[1] - cn2[2]) +
+        n3 * n2 * n1 * (cn1[1] - cn1[2])
+    )
+  )
+
   cosa <- .cosa(cn1 = cn1, cn2 = cn2, cn3 = cn3, cost = cost,
-                constrain = constrain, round = round, local.solver = local.solver,
+                constrain = constrain, round = round,
+                max.power = max.power, local.solver = local.solver,
                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                 rho2 = rho2, rho3 = rho3, omega3 = omega3,
@@ -162,7 +199,8 @@ cosa.bcrd3r2 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
                 g3 = g3, p0 = p0, p = p, n0 = n0,
                 n1 = n1, n2 = n2, n3 = n3)
   cosa.out <- list(parms = list(cn1 = cn1, cn2 = cn2, cn3 = cn3, cost = cost,
-                                constrain = constrain, round = round, local.solver = local.solver,
+                                constrain = constrain, round = round,
+                                max.power = max.power, local.solver = local.solver,
                                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
                                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                                 rho2 = rho2, rho3 = rho3, omega3 = omega3,

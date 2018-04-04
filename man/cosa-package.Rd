@@ -7,7 +7,7 @@
 \title{Constrained Optimal Sample Allocation}
 
 \description{
-Constrained Optimal Sample Allocation (COSA) functions are designed to optimize sample sizes at one or more levels subject to budget, statistical power, or effect size constraints. COSA can be found in the following forms; (i) under budgetary constraints given marginal costs per unit, (ii) under statistical power or minimum detectable effect size (MDES) constraints, and (iii) under sample size constraints for one or more levels along with (i) or (ii). Specifying \code{rhots = 0} produces result equivalent to corresponding random assignment designs. Therefore, COSA functions also allows optimization of proportion of treatment allocation (\code{p}) under unequal marginal costs when primary constraint is on total cost. Different starting values and algorithms may produce different results especially when sample sizes at two or more levels and \code{p} are optimized. Comparing several algorithms may faciliate decisions regarding sample sizes and \code{p}.
+Constrained Optimal Sample Allocation (COSA) functions are designed to optimize sample sizes at one or more levels subject to budget, statistical power, or effect size constraints. COSA can be found in the following forms; (i) under budgetary constraints given marginal costs per unit while minimizing the sampling variance of the treatment effect (or, alternatively, while maximizing statistical power), (ii) under statistical power or effect size (ES) constraints while minimizing the total cost, and (iii) under sample size constraints for one or more levels along with (i) or (ii). Specifying \code{rhots = 0} produces result equivalent to corresponding random assignment designs, which means there is no relationship between the treatment [random] and the score variable. Therefore, COSA functions also allows optimization of proportion of treatment allocation (\code{p}) under unequal marginal costs when primary constraint is on total cost. Different starting values and algorithms may produce different results especially when marginal cost information is not provided and sample sizes at two or more levels and \code{p} are optimized. Comparing several algorithms may faciliate decisions regarding sample sizes and \code{p}.
 
 Designs available in \pkg{cosa} package:
 \tabular{rccc}{
@@ -29,18 +29,18 @@ Designs available in \pkg{cosa} package:
   \code{ird}: individual-level regression discontinuity.
   \code{bird}: blocked individual-level regression discontinuity.
   \code{crd}: cluster-level regression discontinuity.
-  \code{bird}: blocked cluster-level regression discontinuity.
+  \code{bcrd}: blocked cluster-level regression discontinuity.
 
   Design parameters follows a sequential order. Numbers at the end of a sequential parameter refers to the corresponding level. For example \code{rho2} is the proportion of variance in the outcome between level 2 units, \code{rho3} is the proportion of variance in the outcome between level 3 units. Similiarly, \code{r21} is the proportion of the variance in the outcome explained by level 1 covariates, \code{r22} is the proportion of the variance in the outcome explained by level 2 covariates and so on. Similiar naming conventions applies to other design parameters.
 
-  Wrapper functions described below pass arguments to individual functions. Most of the arguments should be specified in the vector or list form length of which depends on the type of design specified in \code{design} argument. To use these functions, some knowledge about design parameters is required. For example for \code{design = "bird3r1"} the length of \code{rho} is 2, the length of \code{omega} is 2, the length of \code{r2} is 1, and the length of \code{r2t} is 2. Otherwise design-specific functions are recommended.
+  Wrapper functions described below pass arguments to design-specific functions. Most of the arguments should be specified in the vector or list form length of which depends on the type of design specified in \code{design} argument. To use these functions, some knowledge about design parameters is required. For example for \code{design = "bird3r1"} the length of \code{rho} is 2, the length of \code{omega} is 2, the length of \code{r2} is 1, and the length of \code{r2t} is 2. Otherwise design-specific functions are recommended.
 
 }
 
 \usage{
 cosa(design = "ird1r1",
      cn = as.list(rep(0, length(n))), cost = NULL,
-     n = list(NULL), p = NULL, n0 = rep(5 + g, length(n)), p0 = .50,
+     n = list(NULL), p = NULL, n0 = rep(5 + g, length(n)), p0 = .499,
      constrain = "power", local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
      power = .80, es = .25, alpha = .05, two.tailed = TRUE,
      rhots = NULL, k = c(-6, 6), dists = "normal",
@@ -59,7 +59,7 @@ power(design = "ird1r1", es = .25, alpha = .05, two.tailed = TRUE,
 }
 
 \arguments{
-  \item{design}{One of the \code{"ird1r1"}, \code{"bird2r1"}, \code{"bird3r1"}, \code{"bird4r1"}, \code{"crd2r2"}, \code{"bcrd3r2"}, \code{"bcrd4r2"}, \code{"crd3r3"}, \code{"bcrd4r3"}, \code{"crd4r4"}.}
+  \item{design}{One of the \code{"ird1r1"}, \code{"bird2f1"}, \code{"bird2r1"}, \code{"bird3r1"}, \code{"bird4r1"}, \code{"crd2r2"}, \code{"bcrd3f2"}, \code{"bcrd3r2"}, \code{"bcrd4r2"}, \code{"crd3r3"}, \code{"bcrd4f3"}, \code{"bcrd4r3"}, \code{"crd4r4"}.}
   \item{cn}{list of marginal costs per unit (positional). e.g. \code{list(cn1, cn2, cn3)}.}
   \item{cost}{total cost or budget.}
   \item{n}{list of sample sizes (positional). e.g. \code{list(n1, n2, n3)}.}
@@ -95,7 +95,7 @@ power(design = "ird1r1", es = .25, alpha = .05, two.tailed = TRUE,
 # cost constrained - optimize n2 and n3
 cosa(design = "crd3r3", rhots = 0,
      cn =list(c(5, 3), c(10,5), c(50,20)),
-     constrain = "cost", cost = 25000,
+     constrain = "cost", cost = 15000,
      rho = c(.17, .06),
      g = 4, r2 = c(.30, .20, .20),
      n = list(15, NULL, NULL))

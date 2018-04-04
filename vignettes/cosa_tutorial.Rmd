@@ -2,7 +2,9 @@
 title: "<h1 style = 'color: grey;'> Constrained Optimal Sample Allocation Tutorial </h1>"
 author: "Metin Bulus"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{COSA Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,54 +16,107 @@ knitr::opts_chunk$set(echo = TRUE)
 library(cosa)
 ```
 
-The following example demonstrates how to perform constrained optimal sample allocation (COSA) for a two-level cluster randomized trial (CRT) and for a corresponding cluster-level regression discontinuity (CRD) design. Number of clusters is calculated where treatment and control units are associated with differential marginal costs. This result in a cost-efficient treatment group allocation (`p`) for the CRT along with the optimal number of clusters. However, in a comparable CRD design proportion of treatment group allocation cannot be optimized as the cutoff and the scoring variable is predetermined. 
+To install and load the package:
+```{r eval = FALSE}
+install.packages("cosa")
+library(cosa)
+```
 
-*Cluster Randomized Trial (CRT)*
+The following examples demonstrates how to perform constrained optimal sample allocation (COSA) for a two-level cluster randomized trial (CRT) and for the corresponding cluster-level regression discontinuity (CRD) design under three primary constraints. Note: `NULL` arguments are provided for clarity, otherwise they do not have to be explicit.
 
-```{r, message=FALSE}
+## Primary Constraint on the Total Cost
+
+```{r, message=FALSE, fig.width=7, fig.height=5}
+# CRT('rhots = 0')
 # cost constrained - optimize p and n2
-# Specifying rhots as 0 allows COSA in CRT
 crt <- cosa.crd2r2(rhots = 0,
-                   constrain = "cost", cost = 15000,
+                   constrain = "cost", cost = 12500, 
                    cn1 = c(5, 2), cn2 = c(50, 20),
-                   es = .20, rho2 = .20,
+                   es = .20,  power = .80, rho2 = .20,
                    g2 = 5, r21 = .20, r22 = .30,
                    p = NULL, n1 = 24,  n2 = NULL)
-```
-
-*Cluster-level Regression Discontinuity (CRD) Study*
-
-```{r, message=FALSE}
+# CRD
 # cost constrained - optimize n2
-crd <- cosa.crd2r2(constrain = "cost", cost = 15000,
+crd <- cosa.crd2r2(constrain = "cost", cost = 12500,
                    cn1 = c(5, 2), cn2 = c(50, 20),
-                   es = .20, rho2 = .20,
+                   es = .20,  power = .80, rho2 = .20,
                    g2 = 5, r21 = .20, r22 = .30,
                    p = .387, n1 = 24,  n2 = NULL)
-```
 
-*Comparison via MDES and Power Plots*
-```{r, message=FALSE, fig.width=7, fig.height=5}
+# example plots
 par(mfrow = c(1, 2), mai = c(1, .9, .5, .2))
-
+# compare minimum detectable effect size and 95% CI
 plot(crt, ypar = "mdes", xpar = "n2",
      ylim = c(0, 1), xlim = c(10, 200), 
-     ylab = "MDES (Power = .80)", xlab = "Number of Clusters",
+     ylab = "MDES (with Power = .80)", xlab = "Number of Clusters",
      main = "CRT", locate = TRUE)
 plot(crd, ypar = "mdes", xpar = "n2",
      ylim = c(0, 1), xlim = c(10, 200),
-     ylab = "MDES (Power = .80)", xlab = "Number of Clusters",
+     ylab = "MDES (with Power = .80)", xlab = "Number of Clusters",
      main = "CRD", locate = TRUE)
-
+# compare statistical power 
 plot(crt, ypar = "power", xpar = "n2",
      ylim = c(0, 1), xlim = c(10, 200), 
-     ylab = "Power (ES = .20)", xlab = "Number of Clusters",
+     ylab = "Power (for ES = .20)", xlab = "Number of Clusters",
      main = "CRT", locate = TRUE)
 plot(crd, ypar = "power", xpar = "n2",
      ylim = c(0, 1), xlim = c(10, 200), 
-     ylab = "Power (ES = .20)", xlab = "Number of Clusters",
+     ylab = "Power (for ES = .20)", xlab = "Number of Clusters",
      main = "CRD", locate = TRUE)
 
 ```
 
---o--
+As seen from the MDES and power plots, a little less than 150 clusters are needed to obtain the benchmark power of 80% for the CRT (more than 200 clusters for the CRD). Precise number of clusters can be found via placing the primary constraint on either the effect size or power. 
+
+## Primary Constraint on the Effect Size
+
+```{r, message=FALSE}
+# CRT('rhots = 0')
+# cost constrained - optimize p and n2
+cosa.crd2r2(rhots = 0,
+            constrain = "es", es = .20,
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            power = .80, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30,
+            p = NULL, n1 = 24,  n2 = NULL)
+
+# CRD
+# cost constrained - optimize n2
+cosa.crd2r2(constrain = "es", es = .20,
+            power = .80, rho2 = .20,
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            g2 = 5, r21 = .20, r22 = .30,
+            p = .386, n1 = 24,  n2 = NULL)
+```
+
+## Primary Constraint on the Statistical Power
+
+```{r, message=FALSE}
+# CRT('rhots = 0')
+# cost constrained - optimize p and n2
+cosa.crd2r2(rhots = 0, 
+            constrain = "power", power = .80,
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            es = .20, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30,
+            p = NULL, n1 = 24,  n2 = NULL)
+# the cost reduction for using an unbalanced design might be trivial
+# fix p = .50 to obtain the cost under the balanced design for comparison
+cosa.crd2r2(rhots = 0, 
+            constrain = "power", power = .80,
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            es = .20, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30,
+            p = .50, n1 = 24,  n2 = NULL)
+
+# CRD
+# cost constrained - optimize n2
+cosa.crd2r2(constrain = "power", power = .80,
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            es = .20, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30,
+            p = .386, n1 = 24,  n2 = NULL)
+```
+
+--o-- <br>
+<footnote> Copyright &copy; 2017-2018 Metin Bulus </footnote>

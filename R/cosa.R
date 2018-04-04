@@ -1,6 +1,6 @@
 cosa <- function(design = "ird1r1",
                  cn = as.list(rep(0, length(n))), cost = NULL,
-                 n = list(NULL), p = NULL, n0 = rep(5 + g, length(n)), p0 = .50,
+                 n = list(NULL), p = NULL, n0 = rep(5 + g, length(n)), p0 = .499,
                  constrain = "power", local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
                  power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                  rhots = NULL, k = c(-6, 6), dists = "normal",

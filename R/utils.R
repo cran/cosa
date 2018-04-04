@@ -85,11 +85,15 @@
                   rho2, rho3, rho4, omega2, omega3, omega4,
                   g1 = 0, g2 = 0, g3 = 0, g4 = 0,
                   r21 = 0, r22 = 0, r23 = 0, r24 = 0,
-                  r2t2 = 0, r2t3 = 0, r2t4 = 0, round = TRUE) {
+                  r2t2 = 0, r2t3 = 0, r2t4 = 0, round = TRUE,
+                  jacobian = TRUE, max.power = FALSE,
+                  localtol = 1e-8, fabstol = 1e-8, maxeval = 500) {
 
   .df <- get(".df", parent.frame())
   .sse <- get(".sse", parent.frame())
   .cost <- get(".cost", parent.frame())
+  .cost.jacob <- get(".cost.jacob", parent.frame())
+  .var.jacob <- get(".var.jacob", parent.frame())
   lb <- get("lb", parent.frame())
   fun <- get("fun", parent.frame())
 
@@ -115,16 +119,18 @@
       }
     }
   }
-  d <- .d(p, k1, k2, dists, rhots)
+  d <- .d(p = p, k1 = k1, k2 = k2, dists = dists, rhots = rhots)
 
   fun_parsed <- scan(text = fun, what = "character", sep=".", quiet = TRUE)
   rlevel <- as.numeric(substr(fun, nchar(fun), nchar(fun)))
   nlevels <- as.numeric(substr(fun, nchar(fun)-2, nchar(fun)-2))
 
-  # equality constraints on cost
+  # inequality constraints on cost
   .eq.cost <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -138,7 +144,9 @@
   # equality constraints on power
   .eq.power <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -146,15 +154,17 @@
       n4 <- ss[4]
     }
     p <- ss[nlevels + 1]
-    return(.power(es = es,  alpha = alpha,
-                  sse = eval(.sse), df = eval(.df),
-                  two.tailed = two.tailed) - power)
+    return(abs(.power(es = es,  alpha = alpha,
+                      sse = eval(.sse), df = eval(.df),
+                      two.tailed = two.tailed) - power))
   }
 
-  # equality constraints on mdes
+  # equality constraints on ES
   .eq.es <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -162,15 +172,17 @@
       n4 <- ss[4]
     }
     p <- ss[nlevels + 1]
-    return(.mdes(power = power, alpha = alpha,
-                 sse = eval(.sse), df = eval(.df),
-                 two.tailed = two.tailed)[1] - es)
+    return(abs(.mdes(power = power, alpha = alpha,
+                     sse = eval(.sse), df = eval(.df),
+                     two.tailed = two.tailed)[1] - es))
   }
 
   #  mdes and power
   .mlu.pwr <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -189,7 +201,9 @@
   # minimize cost given power or mdes
   .min.cost <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -203,7 +217,9 @@
   # minimize treatment variance given cost
   .min.var <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -214,10 +230,30 @@
     return(eval(.sse)^2)
   }
 
+  # miaximize power
+  .max.pwr <- function(ss){
+    n1 <- ss[1]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
+    if(nlevels >= 3){
+      n3 <- ss[3]
+    }
+    if(nlevels == 4){
+      n4 <- ss[4]
+    }
+    p <- ss[nlevels + 1]
+    return(abs(.power(es = es,  alpha = alpha,
+                      sse = eval(.sse), df = eval(.df),
+                      two.tailed = two.tailed) - 1))
+  }
+
   # starting values
   .start <- function(ss){
     n1 <- ss[1]
-    n2 <- ss[2]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
     if(nlevels >= 3){
       n3 <- ss[3]
     }
@@ -228,6 +264,42 @@
     return(.power(es = es,  alpha = alpha,
                   sse = eval(.sse), df = eval(.df),
                   two.tailed = two.tailed) - .95)
+  }
+
+  # jacobian for cost
+  .cost.jac <- function(ss){
+    n1 <- ss[1]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
+    if(nlevels >= 3){
+      n3 <- ss[3]
+    }
+    if(nlevels == 4){
+      n4 <- ss[4]
+    }
+    p <- ss[nlevels + 1]
+    return(
+      eval(.cost.jacob)
+    )
+  }
+
+  # jacobian for variance
+  .var.jac <- function(ss){
+    n1 <- ss[1]
+    if(nlevels >= 2){
+      n2 <- ss[2]
+    }
+    if(nlevels >= 3){
+      n3 <- ss[3]
+    }
+    if(nlevels == 4){
+      n4 <- ss[4]
+    }
+    p <- ss[nlevels + 1]
+    return(
+      eval(.var.jacob)
+    )
   }
 
   cost.list <- list(cn1, cn2, cn3, cn4)
@@ -247,15 +319,36 @@
     }
   }
 
-  fn.constr <- switch(tolower(constrain),
-                      "power" = .eq.power,
-                      "es" = .eq.es,
-                      "cost" = .eq.cost,
-                      stop("Incorrect constraint", call. = FALSE))
+  if(max.power == TRUE) {
+    if(tolower(constrain) %in% c("es", "power")) {
+      stop("Power cannot be maximized with primary constraint on effect size or power",
+           call. = FALSE)
+    }
+    .min.var <- .max.pwr
+    jacobian <- FALSE
+  }
   fn.min <- switch(tolower(constrain),
                    "power" = .min.cost,
                    "es" = .min.cost,
-                   "cost" = .min.var)
+                   "cost" = .min.var,
+                   stop("Incorrect constraint",
+                        call. = FALSE))
+  fn.constr <- switch(tolower(constrain),
+                      "power" = .eq.power,
+                      "es" = .eq.es,
+                      "cost" = .eq.cost)
+  if(jacobian) {
+    fn.min.jacob <- switch(tolower(constrain),
+                           "power" = .cost.jac,
+                           "es" = .cost.jac,
+                           "cost" = .var.jac)
+  } else {
+    fn.min.jacob <- NULL
+  }
+  fn.constr.jacob <- switch(tolower(constrain),
+                            "power" = NULL,
+                            "es" = NULL,
+                            "cost" = .cost.jac)
 
   if(rlevel >= 1 & length(cn1) == 1) {
     cn1 <- c(cn1, cn1)
@@ -277,13 +370,12 @@
     stop("Incorrect value for argument 'n0'",  call. = FALSE)
   }
 
-  # constraints on one sample sizes and p
   p0  <- ifelse(!is.null(p), mean(p), p0)
   plb <- ifelse(!is.null(p), min(p), .15)
   pub <- ifelse(!is.null(p), max(p), .85)
   n10  <- ifelse(!is.null(n1), mean(n1), n0[1])
   n1lb <- ifelse(!is.null(n1), min(n1), lb[1])
-  n1ub <- ifelse(!is.null(n1), max(n1), Inf)
+  n1ub <- ifelse(!is.null(n1), max(n1), 1e+6)
   if(nlevels == 1){
     ss0  <- c(n10,p0)
     sslb <- c(n1lb,plb)
@@ -291,62 +383,88 @@
   }else if(nlevels == 2){
     n20  <- ifelse(!is.null(n2), mean(n2), n0[2])
     n2lb <- ifelse(!is.null(n2), min(n2), lb[2])
-    n2ub <- ifelse(!is.null(n2), max(n2), Inf)
+    n2ub <- ifelse(!is.null(n2), max(n2), 1e+6)
     ss0  <- c(n10,n20,p0)
     sslb <- c(n1lb,n2lb,plb)
     ssub <- c(n1ub,n2ub,pub)
   }else if(nlevels == 3){
     n20  <- ifelse(!is.null(n2), mean(n2), n0[2])
     n2lb <- ifelse(!is.null(n2), min(n2), lb[2])
-    n2ub <- ifelse(!is.null(n2), max(n2), Inf)
+    n2ub <- ifelse(!is.null(n2), max(n2), 1e+6)
     n30  <- ifelse(!is.null(n3), mean(n3), n0[3])
     n3lb <- ifelse(!is.null(n3), min(n3), lb[3])
-    n3ub <- ifelse(!is.null(n3), max(n3), Inf)
+    n3ub <- ifelse(!is.null(n3), max(n3), 1e+6)
     ss0  <- c(n10,n20,n30,p0)
     sslb <- c(n1lb,n2lb,n3lb,plb)
     ssub <- c(n1ub,n2ub,n3ub,pub)
   }else if(nlevels == 4){
     n20  <- ifelse(!is.null(n2), mean(n2), n0[2])
     n2lb <- ifelse(!is.null(n2), min(n2), lb[2])
-    n2ub <- ifelse(!is.null(n2), max(n2), Inf)
+    n2ub <- ifelse(!is.null(n2), max(n2), 1e+6)
     n30  <- ifelse(!is.null(n3), mean(n3), n0[3])
     n3lb <- ifelse(!is.null(n3), min(n3), lb[3])
-    n3ub <- ifelse(!is.null(n3), max(n3), Inf)
+    n3ub <- ifelse(!is.null(n3), max(n3), 1e+6)
     n40  <- ifelse(!is.null(n4), mean(n4), n0[4])
     n4lb <- ifelse(!is.null(n4), min(n4), lb[4])
-    n4ub <- ifelse(!is.null(n4), max(n4), Inf)
+    n4ub <- ifelse(!is.null(n4), max(n4), 1e+6)
     ss0  <- c(n10,n20,n30,n40,p0)
     sslb <- c(n1lb,n2lb,n3lb,n4lb,plb)
     ssub <- c(n1ub,n2ub,n3ub,n4ub,pub)
   }
 
-  if(any(ss0 < sslb)) {
-    stop("Starting values cannot be smaller than lower bounds",  call. = FALSE)
-  }
-  if(constrain == "cost") {
-    ss0 <- auglag(x0 = ss0, fn = .min.cost, heq = .start,
-                  localsolver = "LBFGS", localtol = 1e-8,
-                  lower = sslb, upper = ssub)$par
+  if(any(ss0 < sslb) || any(ss0 > ssub)) {
+    stop("Starting values are out of bounds",  call. = FALSE)
   }
 
   local.solver <- toupper(local.solver)
-  # constrained optimal sample allocation
+  if(constrain %in% c("es","power") || max.power == TRUE) {
+    solver.power.es <- c("SLSQP", "LBFGS",  "COBYLA", "MMA")
+    local.solver <- local.solver[order(match(local.solver, solver.power.es))]
+  }
+
   i <- 1; conv <- FALSE
   while(i <= length(local.solver) & conv == FALSE){
+
     if(!local.solver[i] %in% c("LBFGS", "SLSQP", "MMA", "COBYLA")) {
       stop("Incorrect value for argument 'local.solver'",  call. = FALSE)
     }
-    nlopt.ss <- auglag(x0 = ss0, fn = fn.min, heq = fn.constr,
-                       localsolver = local.solver[i], localtol = 1e-8,
-                       lower = sslb, upper = ssub)
-    if(length(intersect(ss0, round(nlopt.ss$par, 1))) < nlevels - 1){
-      if(nlopt.ss$par[nlevels] %% 1 != 0) {
-        ss0[nlevels] <- sslb[nlevels] <- ssub[nlevels] <- round(nlopt.ss$par[nlevels])
-        nlopt.ss <- auglag(x0 = ss0, fn = fn.min, heq = fn.constr,
-                           localsolver = local.solver[i], localtol = 1e-8,
-                           lower = sslb, upper = ssub)
+
+    if(constrain == "cost") {
+      par0 <- try(auglag(x0 = ss0, fn = .min.cost, gr = .cost.jac, heq = .start,
+                          localsolver = local.solver[i], localtol = localtol,
+                          lower = sslb, upper = ssub,
+                          control = list(ftol_abs = fabstol, maxeval = maxeval))$par)
+      if(!inherits(par0, "try-error")) {
+        ss00 <- par0
+      } else {
+        ss00 <- ss0
+      }
+    } else {
+      ss00 <- ss0
+    }
+
+    nlopt.ss <- auglag(x0 = ss00, fn = fn.min, heq = fn.constr,
+                       gr = fn.min.jacob, heqjac = fn.constr.jacob,
+                       localsolver = local.solver[i], localtol = localtol,
+                       lower = sslb, upper = ssub,
+                       control = list(ftol_abs = fabstol, maxeval = maxeval))
+
+    if(round) {
+      if(length(intersect(ss0, round(nlopt.ss$par, 1))) < nlevels - 1){
+        if(nlopt.ss$par[nlevels] %% 1 != 0) {
+          sslb.round <- sslb
+          ssub.round <- ssub
+          ss00.round <- ss00
+          ss00.round[nlevels] <- sslb.round[nlevels] <- ssub.round[nlevels] <- round(nlopt.ss$par[nlevels])
+          nlopt.ss <- auglag(x0 = ss00.round, fn = fn.min, heq = fn.constr,
+                             gr = fn.min.jacob, heqjac = fn.constr.jacob,
+                             localsolver = local.solver[i], localtol = localtol,
+                             lower = sslb.round, upper = ssub.round,
+                             control = list(ftol_abs = fabstol, maxeval = maxeval))
+        }
       }
     }
+
     if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
       conv <- FALSE
       cat("Solution is not feasible with ", local.solver[i], ". Trying next algorithm \n", sep = "")
@@ -356,10 +474,11 @@
       ss1 <- nlopt.ss$par
     }
     i <- i+1
+
   }
 
   if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
-    message("Consider changing starting values, or relax one of the fixed sample size in the form c(x-.444, x+.444)")
+    message("Consider changing starting values, or relax one of the fixed sample size")
     stop("Solution is not feasible. Change default settings", call.=FALSE)
   }
 
@@ -369,7 +488,7 @@
                    ifelse(!is.null(n4), ifelse(length(n4) >= 2, "<n4<", "[n4]"),"n4"))[1:nlevels],
                  ifelse(!is.null(p), ifelse(length(p) == 2, "<p<", "[p]"),"p"),
                  ifelse(constrain == "cost","[cost]","cost"),
-                 ifelse(constrain == "es","[es]","es"),
+                 ifelse(constrain == "es","[mdes]","mdes"),
                  paste0(100 * round((1 - alpha), 2), "%lcl"),
                  paste0(100 * round((1 - alpha), 2), "%ucl"),
                  ifelse(constrain == "power","[power]","power"))

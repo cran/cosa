@@ -12,8 +12,9 @@
 \usage{
 cosa.bcrd3r2(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
              n1 = NULL, n2 = NULL, n3 = NULL, p = NULL,
-             n0 = c(10, 3, 100 + g3), p0 = .50, constrain = "power",
-             round = TRUE, local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
+             n0 = c(10, 3, 100 + g3), p0 = .499, constrain = "power",
+             round = TRUE, max.power = FALSE,
+             local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
              rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
              power = .80, es = .25, alpha = .05, two.tailed = TRUE,
              rho2, rho3, omega3, g3 = 0, r21 = 0, r22 = 0, r2t3 = 0)
@@ -46,6 +47,7 @@ power.bcrd3r2(es = .25, alpha = .05, two.tailed = TRUE,
   \item{two.tailed}{logical; \code{TRUE} for two-tailed hypothesis testing.}
   \item{constrain}{character; \code{"cost"}, \code{"power"}, or \code{"mdes"}.}
   \item{round}{logical; \code{TRUE} for rounded COSA solution.}
+  \item{max.power}{logical; \code{TRUE} for maximizing power instead of minimizing variance.}
   \item{local.solver}{subset of \code{c("LBFGS", "SLSQP", "MMA", "COBYLA")}}
   \item{rhots}{correlation between the treatment and the scoring variable. Specify \code{rhots = 0} to obtain results equivalent to random assignment designs.}
   \item{k1}{left truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is not \code{NULL} or \code{dists = "uniform"}.}

@@ -126,8 +126,8 @@ power.ird1r1 <- function(es = .25, alpha = .05, two.tailed = TRUE,
 # power.ird1r1(es = 0.466, n1 = 400, g1 = 3)
 
 cosa.ird1r1 <- function(cn1 = 0,  cost = NULL,
-                        n1 = NULL, p = NULL, n0 = c(400 + g1), p0 = .50,
-                        constrain = "power", round = TRUE,
+                        n1 = NULL, p = NULL, n0 = c(400 + g1), p0 = .499,
+                        constrain = "power", round = TRUE, max.power = FALSE,
                         local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                         power = .80, es = .25, alpha = .05, two.tailed = TRUE,
@@ -151,6 +151,10 @@ cosa.ird1r1 <- function(cn1 = 0,  cost = NULL,
     stop("Non-logical value for 'two.tailed'", call. = FALSE)
   }
 
+  if(!is.logical(max.power) || length(max.power) > 1){
+    stop("Non-logical value for 'max.power'", call. = FALSE)
+  }
+
   if(any(n1 - g1 < 3)){
     stop("Insufficient sample size, increase 'n1'", call. = FALSE)
   }
@@ -166,13 +170,31 @@ cosa.ird1r1 <- function(cn1 = 0,  cost = NULL,
   .sse <- quote(sqrt(d * (1 - r21) / (p * (1 - p) * n1)))
   .cost <- quote(n1 * (cn1[2] + p * (cn1[1] - cn1[2])))
 
+  .var.jacob <- expression(
+    c(
+      -d*(1-r21)/(p*(1-p)*n1^2),
+
+      -(1-2*p)*d*(1-r21)/(p^2*(1-p)^2*n1)
+    )
+  )
+
+  .cost.jacob <- expression(
+    c(
+      (p*cn1[1]+(1-p)*cn1[2]),
+
+      n1*(cn1[1]-cn1[2])
+    )
+  )
+
   cosa <- .cosa(cn1 = cn1, cost = cost,
-                constrain = constrain, round = round, local.solver = local.solver,
+                constrain = constrain, round = round,
+                max.power = max.power, local.solver = local.solver,
                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                 r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1)
   cosa.out <- list(parms = list(cn1 = cn1, cost = cost,
-                                constrain = constrain, round = round, local.solver = local.solver,
+                                constrain = constrain, round = round,
+                                max.power = max.power, local.solver = local.solver,
                                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
                                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                                 r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1),

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Metin Bulus" />
 
-<meta name="date" content="2018-04-04" />
+<meta name="date" content="2018-12-16" />
 
 <title></title>
 
@@ -55,6 +55,8 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+
 </style>
 
 
@@ -69,10 +71,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore"><h1 style="color: grey;">
-Constrained Optimal Sample Allocation Tutorial
+Bound Constrained Optimal Design of Multilevel Regression Discontinuity Designs and Randomized Controlled Trials
 </h1></h1>
 <h4 class="author"><em>Metin Bulus</em></h4>
-<h4 class="date"><em>2018-04-04</em></h4>
+<h4 class="date"><em>2018-12-16</em></h4>
 
 
 <div id="TOC">
@@ -100,8 +102,23 @@ crt &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
 <pre><code>## 
 ## Results are equivalent to corresponding random assignment designs 
 ## Solution converged with LBFGS 
-##      [n1]  n2     p [cost] mdes 95%lcl 95%ucl power
-## [1,]   24 116 0.388  12478 0.22  0.066  0.374 0.722</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2     p [cost] mdes 95%lcl 95%ucl power
+##    24 116 0.388  12478 0.22  0.066  0.374 0.722
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.22 (with power = 80) 
+## power = 0.722 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CRD</span>
 <span class="co"># cost constrained - optimize n2</span>
 crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>,
@@ -110,8 +127,23 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
                    <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> .<span class="dv">20</span>, <span class="dt">r22 =</span> .<span class="dv">30</span>,
                    <span class="dt">p =</span> .<span class="dv">387</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</code></pre></div>
 <pre><code>## Solution converged with LBFGS 
-##      [n1]  n2   [p] [cost]  mdes 95%lcl 95%ucl power
-## [1,]   24 116 0.388  12478 0.356  0.106  0.605 0.351</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2   [p] [cost]  mdes 95%lcl 95%ucl power
+##    24 116 0.388  12478 0.356  0.106  0.605 0.351
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.356 (with power = 80) 
+## power = 0.351 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># example plots</span>
 <span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="dt">mai =</span> <span class="kw">c</span>(<span class="dv">1</span>, .<span class="dv">9</span>, .<span class="dv">5</span>, .<span class="dv">2</span>))
 <span class="co"># compare minimum detectable effect size and 95% CI</span>
@@ -123,7 +155,7 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
      <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>),
      <span class="dt">ylab =</span> <span class="st">&quot;MDES (with Power = .80)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,
      <span class="dt">main =</span> <span class="st">&quot;CRD&quot;</span>, <span class="dt">locate =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># compare statistical power </span>
 <span class="kw">plot</span>(crt, <span class="dt">ypar =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,
      <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>), 
@@ -149,8 +181,23 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
 <pre><code>## 
 ## Results are equivalent to corresponding random assignment designs 
 ## Solution converged with SLSQP 
-##      [n1]  n2     p  cost [mdes] 95%lcl 95%ucl power
-## [1,]   24 140 0.386 15028    0.2   0.06   0.34   0.8</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2     p  cost [mdes] 95%lcl 95%ucl power
+##    24 140 0.386 15028    0.2   0.06   0.34   0.8
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.2 (with power = 80) 
+## power = 0.8 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CRD</span>
 <span class="co"># cost constrained - optimize n2</span>
 <span class="kw">cosa.crd2r2</span>(<span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> .<span class="dv">20</span>,
@@ -159,8 +206,23 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
             <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> .<span class="dv">20</span>, <span class="dt">r22 =</span> .<span class="dv">30</span>,
             <span class="dt">p =</span> .<span class="dv">386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</code></pre></div>
 <pre><code>## Solution converged with SLSQP 
-##      [n1]  n2   [p]  cost [mdes] 95%lcl 95%ucl power
-## [1,]   24 363 0.386 38964    0.2   0.06   0.34   0.8</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2   [p]  cost [mdes] 95%lcl 95%ucl power
+##    24 363 0.386 38964    0.2   0.06   0.34   0.8
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.2 (with power = 80) 
+## power = 0.8 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 </div>
 <div id="primary-constraint-on-the-statistical-power" class="section level2">
 <h2>Primary Constraint on the Statistical Power</h2>
@@ -175,8 +237,23 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
 <pre><code>## 
 ## Results are equivalent to corresponding random assignment designs 
 ## Solution converged with SLSQP 
-##      [n1]  n2     p  cost mdes 95%lcl 95%ucl [power]
-## [1,]   24 140 0.386 15028  0.2   0.06   0.34     0.8</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2     p  cost mdes 95%lcl 95%ucl [power]
+##    24 140 0.386 15028  0.2   0.06   0.34     0.8
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.2 (with power = 80) 
+## power = 0.8 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># the cost reduction for using an unbalanced design might be trivial</span>
 <span class="co"># fix p = .50 to obtain the cost under the balanced design for comparison</span>
 <span class="kw">cosa.crd2r2</span>(<span class="dt">rhots =</span> <span class="dv">0</span>, 
@@ -188,8 +265,23 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
 <pre><code>## 
 ## Results are equivalent to corresponding random assignment designs 
 ## Solution converged with SLSQP 
-##      [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
-## [1,]   24 133 0.496 15776  0.2   0.06   0.34     0.8</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
+##    24 133 0.496 15776  0.2   0.06   0.34     0.8
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.2 (with power = 80) 
+## power = 0.8 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CRD</span>
 <span class="co"># cost constrained - optimize n2</span>
 <span class="kw">cosa.crd2r2</span>(<span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> .<span class="dv">80</span>,
@@ -198,8 +290,23 @@ crd &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span clas
             <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> .<span class="dv">20</span>, <span class="dt">r22 =</span> .<span class="dv">30</span>,
             <span class="dt">p =</span> .<span class="dv">386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</code></pre></div>
 <pre><code>## Solution converged with SLSQP 
-##      [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
-## [1,]   24 363 0.386 38964  0.2   0.06   0.34     0.8</code></pre>
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
+##    24 363 0.386 38964  0.2   0.06   0.34     0.8
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.2 (with power = 80) 
+## power = 0.8 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained</code></pre>
 <p>–o– <br> <footnote> Copyright © 2017-2018 Metin Bulus </footnote></p>
 </div>
 

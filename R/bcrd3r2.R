@@ -43,8 +43,8 @@ mdes.bcrd3r2 <- function(power = .80, alpha = .05, two.tailed = TRUE,
                    df = df,
                    sse = sse,
                    mdes = mdes)
-  print(round(mdes, 3))
   class(mdes.out) <- c("mdes", "bcrd3r2")
+  .summary.mdes(mdes.out)
   return(invisible(mdes.out))
 }
 
@@ -99,9 +99,8 @@ power.bcrd3r2 <- function(es = .25, alpha = .05, two.tailed = TRUE,
                      df = df,
                      sse = sse,
                      power = power)
-  names(power) <- "power"
-  print(round(power, 3))
   class(power.out) <- c("power", "bcrd3r2")
+  .summary.power(power.out)
   return(invisible(power.out))
 }
 # example
@@ -208,8 +207,8 @@ cosa.bcrd3r2 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
                                 g3 = g3, p0 = p0, p = p, n0 = n0,
                                 n1 = n1, n2 = n2, n3 = n3),
                    cosa = cosa)
-  print(round(cosa, 3))
   class(cosa.out) <- c("cosa", "bcrd3r2")
+  .summary.cosa(cosa.out)
   return(invisible(cosa.out))
 }
 # examples

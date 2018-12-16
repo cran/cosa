@@ -52,8 +52,8 @@ mdes.bird2f1 <- function(power = .80, alpha = .05, two.tailed = TRUE,
                    df = df,
                    sse = sse,
                    mdes = mdes)
-  print(round(mdes, 3))
   class(mdes.out) <- c("mdes", "bird2f1")
+  .summary.mdes(mdes.out)
   return(invisible(mdes.out))
 }
 
@@ -117,9 +117,8 @@ power.bird2f1 <- function(es = .25, alpha = .05, two.tailed = TRUE,
                      df = df,
                      sse = sse,
                      power = power)
-  names(power) <- "power"
-  print(round(power, 3))
   class(power.out) <- c("power", "bird2f1")
+  .summary.power(power.out)
   return(invisible(power.out))
 }
 # example
@@ -208,8 +207,8 @@ cosa.bird2f1 <- function(cn1 = 0, cn2 = 0, cost = NULL,
                                 rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                                 r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2),
                    cosa = cosa)
-  print(round(cosa, 3))
   class(cosa.out) <- c("cosa", "bird2f1")
+  .summary.cosa(cosa.out)
   return(invisible(cosa.out))
 }
 # examples

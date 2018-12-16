@@ -32,10 +32,10 @@
 }
 
 \arguments{
-  \item{cn1}{marginal cost per level 1 unit in treatment and control conditions.}
-  \item{cn2}{marginal cost per level 2 unit in treatment and control conditions.}
-  \item{cn3}{marginal cost per level 3 unit in treatment and control conditions.}
-  \item{cn4}{marginal cost per level 4 unit in treatment and control conditions.}
+  \item{cn1}{marginal cost per level 1 unit in treatment and control conditions, e.g. \code{c(10, 5)}.}
+  \item{cn2}{marginal cost per level 2 unit in treatment and control conditions, e.g. \code{c(50, 30)}.}
+  \item{cn3}{marginal cost per level 3 unit in treatment and control conditions, e.g. \code{c(80, 50)}.}
+  \item{cn4}{marginal cost per level 4 unit in treatment and control conditions, e.g. \code{c(100, 40)}.}
   \item{cost}{total cost or budget.}
   \item{n1}{average number of level 1 units per level 2 unit.}
   \item{n2}{average number of level 2 units per level 3 unit.}

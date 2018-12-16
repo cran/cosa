@@ -1,9 +1,9 @@
 # summarize mdes output
-summary.mdes <- function(object, ...) {
+.summary.mdes <- function(object, ...) {
   cat("\nMinimum detectable effect size: \n--------------------------------------- \nMDES is ",
       round(object$mdes[1], 3), " ", 100 * (1 - round(object$parms$alpha, 2)),
-      "% CI [", round(object$mdes[2], 3), ",", round(object$mdes[3], 3), "] with ", round(object$parms$power, 3)*100,
-      "% power \n---------------------------------------\nDegrees of freedom: ", object$df,
+      "% CI [", round(object$mdes[2], 3), ",", round(object$mdes[3], 3), "]",
+      "\n---------------------------------------\nDegrees of freedom: ", object$df,
       "\nStandardized standard error: ", round(object$sse, 3), "\nType I error rate: ", object$parms$alpha,
       "\nType II error rate: ", round(1 - object$parms$power, 3), "\nTwo-tailed test: ", object$parms$two.tailed,
       "\n---------------------------------------\n",
@@ -16,13 +16,12 @@ summary.mdes <- function(object, ...) {
 }
 
 # summarize power output
-summary.power <- function(object, ...) {
+.summary.power <- function(object, ...) {
   mlu <- .mdes(power = object$power, alpha = object$parms$alpha,
                sse = object$sse, df = object$df, two.tailed = object$parms$two.tailed)
   cat("\nStatistical power: \n--------------------------------------- \n ",
-      round(object$power, 3) * 100, "% power to detect an ES of ", round(mlu[1], 3), " ",
-      100 * (1 - round(object$parms$alpha, 3)), "% CI [", round(mlu[2], 3), ",", round(mlu[3],3),
-      "] \n--------------------------------------- \nDegrees of freedom: ", object$df,
+      round(object$power, 3) * 100, "% power ",
+      "\n--------------------------------------- \nDegrees of freedom: ", object$df,
       "\nStandardized standard error: ", round(object$sse, 3), "\nType I error rate: ", object$parms$alpha,
       "\nType II error rate: ", round(1 - object$power, 3), "\nTwo-tailed test: ", object$parms$two.tailed,
       "\n---------------------------------------\n",
@@ -34,7 +33,7 @@ summary.power <- function(object, ...) {
   cat("---------------------------------------\nNote: An MDES of zero is equivalent to 50th percentile \n")
 }
 
-summary.cosa <- function(object, ...) {
+.summary.cosa <- function(object, ...) {
   design <- class(object)[2]
   rlevel <- as.numeric(substr(design, nchar(design), nchar(design)))
   nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
@@ -44,6 +43,9 @@ summary.cosa <- function(object, ...) {
     cat("\nExact solution: \n--------------------------------------------------- \n")
   }
   print(as.data.frame(round(object$cosa, 3)), row.names=FALSE)
+  if(length(object$parms$cn1) == 1) {
+    object$parms$cn1 <- rep(object$parms$cn1, 2)
+  }
   cat("--------------------------------------------------- \nPer unit marginal costs: \n",
       "Level 1 treatment:", object$parms$cn1[1] ,
       "\n Level 1 control:", object$parms$cn1[2], "\n")

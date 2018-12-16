@@ -230,7 +230,7 @@
     return(eval(.sse)^2)
   }
 
-  # miaximize power
+  # maximize power
   .max.pwr <- function(ss){
     n1 <- ss[1]
     if(nlevels >= 2){

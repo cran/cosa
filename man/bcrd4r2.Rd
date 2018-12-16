@@ -34,8 +34,8 @@ power.bcrd4r2(es = .25, alpha = .05, two.tailed = TRUE,
 }
 
 \arguments{
-  \item{cn1}{marginal cost per level 1 unit in treatment and control conditions.}
-  \item{cn2}{marginal cost per level 2 unit in treatment and control conditions.}
+  \item{cn1}{marginal cost per level 1 unit in treatment and control conditions, e.g. \code{c(10, 5)}.}
+  \item{cn2}{marginal cost per level 2 unit in treatment and control conditions, e.g. \code{c(50, 20)}.}
   \item{cn3}{marginal cost per level 3 unit.}
   \item{cn4}{marginal cost per level 4 unit.}
   \item{cost}{total cost or budget.}

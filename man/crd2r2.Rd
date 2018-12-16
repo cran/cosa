@@ -56,8 +56,8 @@ power.bcrd3f2(es = .25, alpha = .05, two.tailed = TRUE,
 }
 
 \arguments{
-  \item{cn1}{marginal cost per level 1 unit in treatment and control conditions.}
-  \item{cn2}{marginal cost per level 2 unit in treatment and control conditions.}
+  \item{cn1}{marginal cost per level 1 unit in treatment and control conditions, e.g. \code{c(10, 5)}.}
+  \item{cn2}{marginal cost per level 2 unit in treatment and control conditions, e.g. \code{c(50, 30)}.}
   \item{cn3}{marginal cost per stratum or fixed block.}
   \item{cost}{total cost or budget.}
   \item{n1}{average number of level 1 units per level 2 unit.}

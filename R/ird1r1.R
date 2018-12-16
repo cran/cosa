@@ -52,8 +52,8 @@ mdes.ird1r1 <- function(power = .80, alpha = .05, two.tailed = TRUE,
                    df = df,
                    sse = sse,
                    mdes = mdes)
-  print(round(mdes, 3))
   class(mdes.out) <- c("mdes", "ird1r1")
+  .summary.mdes(mdes.out)
   return(invisible(mdes.out))
 }
 
@@ -117,97 +117,11 @@ power.ird1r1 <- function(es = .25, alpha = .05, two.tailed = TRUE,
                      df = df,
                      sse = sse,
                      power = power)
-  names(power) <- "power"
-  print(round(power, 3))
   class(power.out) <- c("power", "ird1r1")
+  .summary.power(power.out)
   return(invisible(power.out))
 }
 # example
 # power.ird1r1(es = 0.466, n1 = 400, g1 = 3)
-
-cosa.ird1r1 <- function(cn1 = 0,  cost = NULL,
-                        n1 = NULL, p = NULL, n0 = c(400 + g1), p0 = .499,
-                        constrain = "power", round = TRUE, max.power = FALSE,
-                        local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
-                        rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
-                        power = .80, es = .25, alpha = .05, two.tailed = TRUE,
-                        g1 = 0, r21 = 0) {
-
-  ss <- c(n1, g1)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 3){
-    stop("Incorrect value for sample size or number of covariates", call. = FALSE)
-  }
-
-  if(any(r21 < 0) || any(r21 > 1) || !is.numeric(r21) || length(r21) > 1){
-    stop("Incorrect value for [0, 1] bounded arguments", call. = FALSE)
-  }
-
-  rate <- c(alpha, power)
-  if(any(rate < .01) || any(rate > .99) || !is.numeric(rate) || length(rate) > 2){
-    stop("Incorrect value for [.01, .99] bounded arguments", call. = FALSE)
-  }
-
-  if(!is.logical(two.tailed) || length(two.tailed) > 1){
-    stop("Non-logical value for 'two.tailed'", call. = FALSE)
-  }
-
-  if(!is.logical(max.power) || length(max.power) > 1){
-    stop("Non-logical value for 'max.power'", call. = FALSE)
-  }
-
-  if(any(n1 - g1 < 3)){
-    stop("Insufficient sample size, increase 'n1'", call. = FALSE)
-  }
-
-  if(any(es <= 0) || !is.numeric(es) || length(es) > 1){
-    stop("Incorrect value for 'es'", call. = FALSE)
-  }
-
-  fun <- "cosa.ird1r1"
-  lb <- g1 + 3
-
-  .df <- quote(n1 - g1 - 2)
-  .sse <- quote(sqrt(d * (1 - r21) / (p * (1 - p) * n1)))
-  .cost <- quote(n1 * (cn1[2] + p * (cn1[1] - cn1[2])))
-
-  .var.jacob <- expression(
-    c(
-      -d*(1-r21)/(p*(1-p)*n1^2),
-
-      -(1-2*p)*d*(1-r21)/(p^2*(1-p)^2*n1)
-    )
-  )
-
-  .cost.jacob <- expression(
-    c(
-      (p*cn1[1]+(1-p)*cn1[2]),
-
-      n1*(cn1[1]-cn1[2])
-    )
-  )
-
-  cosa <- .cosa(cn1 = cn1, cost = cost,
-                constrain = constrain, round = round,
-                max.power = max.power, local.solver = local.solver,
-                power = power, es = es, alpha = alpha, two.tailed = two.tailed,
-                rhots = rhots, k1 = k1, k2 = k2, dists = dists,
-                r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1)
-  cosa.out <- list(parms = list(cn1 = cn1, cost = cost,
-                                constrain = constrain, round = round,
-                                max.power = max.power, local.solver = local.solver,
-                                power = power, es = es, alpha = alpha, two.tailed = two.tailed,
-                                rhots = rhots, k1 = k1, k2 = k2, dists = dists,
-                                r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1),
-                   cosa = cosa)
-  print(round(cosa, 3))
-  class(cosa.out) <- c("cosa", "ird1r1")
-  return(invisible(cosa.out))
-}
-# examples
-# unconstrained
-# cosa.ird1r1(rhots = 0)
-# constrained
-# cosa.ird1r1(cn1 = c(10,5), cost = 1000, constrain = "cost", p = .50)
-# cosa.ird1r1(rhots = 0, cn1 = c(10,5), cost = 1000, constrain = "cost")
 
 

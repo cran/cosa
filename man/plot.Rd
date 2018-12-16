@@ -13,19 +13,19 @@
           xlim = NULL, ylim = NULL,
           xlab = NULL, ylab = NULL,
           main = NULL, sub = NULL,
-          locate = FALSE, ...)
+          locate = FALSE, benchmark = NULL, ...)
 
 \method{plot}{mdes}(x, ypar = "mdes",  xpar = NULL,
           xlim = NULL, ylim = NULL,
           xlab = NULL, ylab = NULL,
           main = NULL, sub = NULL,
-          locate = FALSE, ...)
+          locate = FALSE, benchmark = NULL, ...)
 
 \method{plot}{cosa}(x, ypar = "mdes",  xpar = NULL,
           xlim = NULL, ylim = NULL,
           xlab = NULL, ylab = NULL,
           main = NULL, sub = NULL,
-          locate = FALSE, ...)
+          locate = FALSE, benchmark = NULL, ...)
 }
 
 \arguments{
@@ -39,6 +39,7 @@
   \item{main}{title for the plot.}
   \item{sub}{subtitle for the plot.}
   \item{locate}{logical; \code{TRUE} locates parameter values for design \code{x} on the plot.}
+  \item{benchmark}{benchmark line.}
   \item{...}{other graphical parameters to pass to \code{plot.new()}.}
 }
 

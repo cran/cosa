@@ -1,5 +1,5 @@
 ---
-title: "<h1 style = 'color: grey;'> Constrained Optimal Sample Allocation Tutorial </h1>"
+title: "<h1 style = 'color: grey;'> Bound Constrained Optimal Design of Multilevel Regression Discontinuity Designs and Randomized Controlled Trials </h1>"
 author: "Metin Bulus"
 date: "`r Sys.Date()`"
 output:

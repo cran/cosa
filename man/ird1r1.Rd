@@ -1,7 +1,6 @@
 \name{ird1r1}
 \alias{ird1r1}
 \alias{bird2f1}
-\alias{cosa.ird1r1}
 \alias{cosa.bird2f1}
 \alias{mdes.ird1r1}
 \alias{mdes.bird2f1}
@@ -10,19 +9,12 @@
 \title{Simple Individual-level Regression Discontinuity (w/ or w/o Strata or Fixed Blocks)}
 
 \description{
- Use \code{mdes.ird1r1()} to calculate minimum detectable effect size, \code{power.ird1r1()} to calculate statistical power, and \code{cosa.ird1r1()} for constrained optimal sample allocation.
+ Use \code{mdes.ird1r1()} to calculate minimum detectable effect size and \code{power.ird1r1()} to calculate statistical power.
 
  If higher level strata or fixed blocks exist, use \code{mdes.bird2f1()} to calculate minimum detectable effect size, \code{power.bird2f1()} to calculate statistical power, and \code{cosa.bird2f1()} for constrained optimal sample allocation.
 }
 
 \usage{
-cosa.ird1r1(cn1 = 0,  cost = NULL, n1 = NULL, p = NULL,
-            n0 = c(400 + g1), p0 = .499, constrain = "power",
-            round = TRUE, max.power = FALSE,
-            local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
-            rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
-            power = .80, es = .25, alpha = .05, two.tailed = TRUE,
-            g1 = 0, r21 = 0)
 
 cosa.bird2f1(cn1 = 0,  cn2 = 0, cost = NULL, n1 = NULL, n2 = NULL, p = NULL,
              n0 = c(400 + g1, 5), p0 = .499, constrain = "power",
@@ -50,7 +42,7 @@ power.bird2f1(es = .25, alpha = .05, two.tailed = TRUE,
 }
 
 \arguments{
-  \item{cn1}{marginal cost per unit in treatment and control conditions.}
+  \item{cn1}{marginal cost per unit in treatment and control conditions, e.g. \code{c(10, 5)}.}
   \item{cn2}{marginal cost per stratum or fixed block.}
   \item{cost}{total cost or budget.}
   \item{n1}{sample size (per stratum or block, if exists).}
@@ -84,9 +76,6 @@ power.bird2f1(es = .25, alpha = .05, two.tailed = TRUE,
 }
 
 \examples{
-# cost constrained - optimize p and n1
-cosa.ird1r1(rhots = 0,  constrain = "cost", cost = 1000,
-            cn1 = c(10,5), p = NULL, n1 = NULL)
 
 # minimum detectable effect size
 mdes.ird1r1(power = .80, r2 = .20, g = 1, p = .50, n = 500)

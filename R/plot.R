@@ -2,7 +2,7 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
                                                  xlim = NULL, ylim = NULL,
                                                  xlab = NULL, ylab = NULL,
                                                  main = NULL, sub = NULL,
-                                                 locate = FALSE, ...) {
+                                                 locate = FALSE, benchmark = NULL, ...) {
 
   if(!inherits(x, "mdes") & !inherits(x, "power") & !inherits(x, "cosa")) {
     stop("'x' should be an object returned from functions in 'cosa' package")
@@ -150,6 +150,10 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
     points(x0, y0, pch=21, bg = adjustcolor(2, alpha.f = 0.5), cex=1.5)
     abline(v = x0, lty = 5, col = adjustcolor(2, alpha.f = 0.5))
   }
-  abline(h = ifelse(ypar == "mdes", 0, .80), lty = 5, col = adjustcolor(2, alpha.f = 0.5))
+  if(is.null(benchmark)) {
+    abline(h = ifelse(ypar == "mdes", .20, .80), lty = 5, col = adjustcolor(2, alpha.f = 0.5))
+  } else {
+    abline(h = benchmark, lty = 5, col = adjustcolor(2, alpha.f = 0.5))
+  }
 
 }

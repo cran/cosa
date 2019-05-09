@@ -27,6 +27,7 @@ export(cosa.crd3r3)
 export(cosa.bcrd4f3)
 export(cosa.bcrd4r3)
 export(cosa.crd4r4)
+export(vectorize.cosa)
 # MDES
 export(mdes.ird1r1)
 export(mdes.bird2f1)

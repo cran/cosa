@@ -14,7 +14,7 @@ cosa.bird2r1(cn1 = 0, cn2 = 0, cost = NULL,
              n1 = NULL, n2 = NULL, p = NULL,
              n0 = c(10, 100 + g2), p0 = .499, constrain = "power",
              round = TRUE, max.power = FALSE,
-             local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
+             local.solver = c("LBFGS", "SLSQP"),
              rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
              power = .80, es = .25, alpha = .05, two.tailed = TRUE,
              rho2, omega2, g2 = 0, r21 = 0, r2t2 = 0)
@@ -46,7 +46,7 @@ power.bird2r1(es = .25, alpha = .05, two.tailed = TRUE,
   \item{constrain}{character; \code{"cost"}, \code{"power"}, or \code{"mdes"}.}
   \item{round}{logical; \code{TRUE} for rounded COSA solution.}
   \item{max.power}{logical; \code{TRUE} for maximizing power instead of minimizing variance.}
-  \item{local.solver}{subset of \code{c("LBFGS", "SLSQP", "MMA", "COBYLA")}}
+  \item{local.solver}{subset of \code{c("LBFGS", "SLSQP")}}
   \item{rhots}{correlation between the treatment and the scoring variable. Specify \code{rhots = 0} to obtain results equivalent to random assignment designs.}
   \item{k1}{left truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is not \code{NULL} or \code{dists = "uniform"}.}
   \item{k2}{right truncation point (in standard deviation units from full normal distribution mean), ignored when \code{rhots} is not \code{NULL} or \code{dists = "uniform"}.}

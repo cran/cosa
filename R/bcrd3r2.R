@@ -109,7 +109,7 @@ power.bcrd3r2 <- function(es = .25, alpha = .05, two.tailed = TRUE,
 cosa.bcrd3r2 <- function(cn1 = 0, cn2 = 0, cn3 = 0, cost = NULL,
                         n1 = NULL, n2 = NULL, n3 = NULL, p = NULL, n0 = c(10, 3, 100 + g3), p0 = .499,
                         constrain = "power", round = TRUE, max.power = FALSE,
-                        local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
+                        local.solver = c("LBFGS", "SLSQP"),
                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                         power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                         rho2, rho3, omega3, g3 = 0, r21 = 0, r22 = 0, r2t3 = 0) {

@@ -22,7 +22,7 @@ install.packages("cosa")
 library(cosa)
 ```
 
-The following examples demonstrates how to perform constrained optimal sample allocation (COSA) for a two-level cluster randomized trial (CRT) and for the corresponding cluster-level regression discontinuity (CRD) design under three primary constraints. Note: `NULL` arguments are provided for clarity, otherwise they do not have to be explicit.
+The following examples demonstrate how to perform bound constrained optimal sample allocation (BCOSA) for a two-level cluster randomized trial (CRT) and for the corresponding cluster-level regression discontinuity (CRD) design under three primary constraints. Note: `NULL` arguments are provided for clarity, otherwise they do not have to be explicit.
 
 ## Primary Constraint on the Total Cost
 
@@ -66,7 +66,7 @@ plot(crd, ypar = "power", xpar = "n2",
 
 ```
 
-As seen from the MDES and power plots, a little less than 150 clusters are needed to obtain the benchmark power of 80% for the CRT (more than 200 clusters for the CRD). Precise number of clusters can be found via placing the primary constraint on either the effect size or power. 
+As seen from the MDES and power plots, a little less than 150 clusters are needed to obtain the benchmark power rate of 80% for the CRT (more than 200 clusters for the CRD). Precise number of clusters can be found via placing the primary constraint on either the effect size or power rate. 
 
 ## Primary Constraint on the Effect Size
 
@@ -89,7 +89,7 @@ cosa.crd2r2(constrain = "es", es = .20,
             p = .386, n1 = 24,  n2 = NULL)
 ```
 
-## Primary Constraint on the Statistical Power
+## Primary Constraint on the Power Rate
 
 ```{r, message=FALSE}
 # CRT('rhots = 0')
@@ -118,5 +118,4 @@ cosa.crd2r2(constrain = "power", power = .80,
             p = .386, n1 = 24,  n2 = NULL)
 ```
 
---o-- <br>
-<footnote> Copyright &copy; 2017-2018 Metin Bulus </footnote>
+--o--

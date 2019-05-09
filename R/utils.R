@@ -371,8 +371,8 @@
   }
 
   p0  <- ifelse(!is.null(p), mean(p), p0)
-  plb <- ifelse(!is.null(p), min(p), .15)
-  pub <- ifelse(!is.null(p), max(p), .85)
+  plb <- ifelse(!is.null(p), min(p), .10)
+  pub <- ifelse(!is.null(p), max(p), .90)
   n10  <- ifelse(!is.null(n1), mean(n1), n0[1])
   n1lb <- ifelse(!is.null(n1), min(n1), lb[1])
   n1ub <- ifelse(!is.null(n1), max(n1), 1e+6)
@@ -418,15 +418,19 @@
 
   local.solver <- toupper(local.solver)
   if(constrain %in% c("es","power") || max.power == TRUE) {
-    solver.power.es <- c("SLSQP", "LBFGS",  "COBYLA", "MMA")
+    solver.power.es <- c("SLSQP", "LBFGS", "MMA", "COBYLA")
     local.solver <- local.solver[order(match(local.solver, solver.power.es))]
   }
 
   i <- 1; conv <- FALSE
   while(i <= length(local.solver) & conv == FALSE){
 
-    if(!local.solver[i] %in% c("LBFGS", "SLSQP", "MMA", "COBYLA")) {
+    if(!local.solver[i] %in% c("LBFGS", "SLSQP",  "MMA", "COBYLA")) {
       stop("Incorrect value for argument 'local.solver'",  call. = FALSE)
+    }
+
+    if(local.solver[i] %in% c("MMA", "COBYLA")) {
+      warning("Possibility of a local solution",  call. = FALSE)
     }
 
     if(constrain == "cost") {
@@ -467,7 +471,7 @@
 
     if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
       conv <- FALSE
-      cat("Solution is not feasible with ", local.solver[i], ". Trying next algorithm \n", sep = "")
+      cat("Solution is not feasible with ", local.solver[i], "\n")
     } else {
       conv <- TRUE
       cat("Solution converged with", local.solver[i], "\n")
@@ -478,8 +482,8 @@
   }
 
   if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
-    message("Consider changing starting values, or relax one of the fixed sample size")
     stop("Solution is not feasible. Change default settings", call.=FALSE)
+    message("Consider changing starting values or relax the constraint on one of the fixed sample size")
   }
 
   col.names <- c(c(ifelse(!is.null(n1), ifelse(length(n1) >= 2, "<n1<", "[n1]"),"n1"),

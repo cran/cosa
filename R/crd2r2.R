@@ -105,7 +105,7 @@ power.crd2r2 <- function(es = .25, alpha = .05, two.tailed = TRUE,
 cosa.crd2r2 <- function(cn1 = 0, cn2 = 0, cost = NULL,
                         n1 = NULL, n2 = NULL, p = NULL, n0 = c(10, 100 + g2), p0 = .499,
                         constrain = "power", round = TRUE, max.power = FALSE,
-                        local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
+                        local.solver = c("LBFGS", "SLSQP"),
                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                         power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                         rho2, g2 = 0, r21 = 0, r22 = 0) {

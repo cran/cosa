@@ -26,6 +26,7 @@ mdes.ird1r1 <- function(power = .80, alpha = .05, two.tailed = TRUE,
 
   user.call <- as.list(sys.call())
   names.user.call <- names(user.call)
+
   if("r2" %in%  names.user.call) {
     r21 <- user.call$r2
     warning("'r2' is renamed as 'r21' and will be removed from the next version", call. = FALSE)

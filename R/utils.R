@@ -20,67 +20,11 @@
   return(power)
 }
 
-# normal (Schochet, 2008, p.14)
-# p: proportion of cases in treatment
-.rhotsn <- function(p){
-  rhots <- dnorm(qnorm(1 - p)) / sqrt(p * (1 - p))
-  return(rhots)
-}
-
-# uniform (Schochet, 2008, p.14)
-# p: proportion of cases in treatment
-.rhotsu <- function(p){
-  rhots <- sqrt(3 * p * (1 - p))
-  return(rhots)
-}
-
-# truncated normal (Schochet, 2008, p.14)
-# p: proportion of cases in treatment
-# k1: left truncation point (in standard deviation units from full normal distribution mean)
-# k2: right truncation point (in standard deviation units from full normal distribution mean)
-.rhotstn <- function(k1, k2, p){
-  c <- qnorm(p * pnorm(k1) + (1 - p) * pnorm(k2) )
-  sigmas2 <- 1 - ((k2 * dnorm(k2) - k1 * dnorm(k1)) / (pnorm(k2) - pnorm(k1))) -
-    ((dnorm(k2) - dnorm(k1)) / (pnorm(k2) - pnorm(k1)))^2
-  rhots <- (p / sqrt(sigmas2 * p * (1 - p))) * ((dnorm(k2) - dnorm(k1)) / (pnorm(k2) - pnorm(k1)) -
-                                                  (dnorm(k2) - dnorm(c)) / (pnorm(k2) - pnorm(c)))
-  return(rhots)
-}
-
-# design effect
-.d <- function(p, k1, k2, dists, rhots) {
-  .de <- function(rhots) {
-    d <- 1 / (1 - rhots^2)
-    return(d)
-  }
-  if(is.null(rhots)) {
-    if(dists == "normal") {
-      if(any(!is.numeric(c(k1, k2)))){
-        stop("Incorrect value for truncation points", call. = FALSE)
-      }
-      d <- .de(.rhotstn(k1, k2, p))
-    } else if(dists == "uniform") {
-      if(k1 != -6 | k2 != 6) {
-        warning("k1 and/or k2 will be ignored.", call. = FALSE)
-      }
-      d <- .de(.rhotsu(p))
-    } else {
-      stop("Incorrect value for 'dists'", call. = FALSE)
-    }
-  } else if(!is.null(rhots)) {
-    if(any(rhots < 0) || any(rhots > 1)) {
-      stop("Incorrect value for [0, 1] bounded argument", call. = FALSE)
-    }
-    d <- .de(rhots)
-  }
-  return(d)
-}
-
 # constrained optimal sample allocation
 .cosa <- function(cn1 = 0, cn2 = 0, cn3 = 0, cn4 = 0, cost = NULL,
                   n1 = NULL, n2 = NULL, n3 = NULL, n4 = NULL, p = NULL, n0, p0,
                   constrain, local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
-                  rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
+                  order = 2, # score = NULL, rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                   power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                   rho2, rho3, rho4, omega2, omega3, omega4,
                   g1 = 0, g2 = 0, g3 = 0, g4 = 0,
@@ -94,32 +38,11 @@
   .cost <- get(".cost", parent.frame())
   .cost.jacob <- get(".cost.jacob", parent.frame())
   .var.jacob <- get(".var.jacob", parent.frame())
+  d <- get("d", parent.frame())
   lb <- get("lb", parent.frame())
   fun <- get("fun", parent.frame())
 
-  if(!is.null(rhots)) {
-    if(rhots == 0) {
-      cat("\nResults are equivalent to corresponding random assignment designs \n")
-      if(!is.null(p)){
-        if(any(p < .01) || any(p > .99) || !is.numeric(p) || length(p) > 2){
-          stop("Incorrect value for [.01, .99] bounded argument 'p'", call. = FALSE)
-        }
-      }
-    }else{
-      if(any(p < .01) || any(p > .99) || !is.numeric(p) || length(p) > 1){
-        stop("Incorrect value for [.01, .99] bounded argument 'p'", call. = FALSE)
-      }
-    }
-  }else{
-    if(is.null(p)){
-      stop("'p' cannot be NULL in regression discontinuity designs", call. = FALSE)
-    }else{
-      if(any(p < .01) || any(p > .99) || !is.numeric(p) || length(p) > 1){
-        stop("Incorrect value for [.01, .99] bounded argument 'p'", call. = FALSE)
-      }
-    }
-  }
-  d <- .d(p = p, k1 = k1, k2 = k2, dists = dists, rhots = rhots)
+  # d <- .d(p = p, k1 = k1, k2 = k2, dists = dists, rhots = rhots)
 
   fun_parsed <- scan(text = fun, what = "character", sep=".", quiet = TRUE)
   rlevel <- as.numeric(substr(fun, nchar(fun), nchar(fun)))
@@ -434,7 +357,7 @@
     }
 
     if(constrain == "cost") {
-      par0 <- try(auglag(x0 = ss0, fn = .min.cost, gr = .cost.jac, heq = .start,
+      par0 <- try(nloptr::auglag(x0 = ss0, fn = .min.cost, gr = .cost.jac, heq = .start,
                           localsolver = local.solver[i], localtol = localtol,
                           lower = sslb, upper = ssub,
                           control = list(ftol_abs = fabstol, maxeval = maxeval))$par)
@@ -447,7 +370,7 @@
       ss00 <- ss0
     }
 
-    nlopt.ss <- auglag(x0 = ss00, fn = fn.min, heq = fn.constr,
+    nlopt.ss <- nloptr::auglag(x0 = ss00, fn = fn.min, heq = fn.constr,
                        gr = fn.min.jacob, heqjac = fn.constr.jacob,
                        localsolver = local.solver[i], localtol = localtol,
                        lower = sslb, upper = ssub,
@@ -460,7 +383,7 @@
           ssub.round <- ssub
           ss00.round <- ss00
           ss00.round[nlevels] <- sslb.round[nlevels] <- ssub.round[nlevels] <- round(nlopt.ss$par[nlevels])
-          nlopt.ss <- auglag(x0 = ss00.round, fn = fn.min, heq = fn.constr,
+          nlopt.ss <- nloptr::auglag(x0 = ss00.round, fn = fn.min, heq = fn.constr,
                              gr = fn.min.jacob, heqjac = fn.constr.jacob,
                              localsolver = local.solver[i], localtol = localtol,
                              lower = sslb.round, upper = ssub.round,
@@ -483,7 +406,7 @@
 
   if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
     stop("Solution is not feasible. Change default settings", call.=FALSE)
-    message("Consider changing starting values or relax the constraint on one of the fixed sample size")
+    message("Consider changing starting values, or relaxing some of the sample size constraints, or trying 'round = FALSE'")
   }
 
   col.names <- c(c(ifelse(!is.null(n1), ifelse(length(n1) >= 2, "<n1<", "[n1]"),"n1"),
@@ -528,12 +451,19 @@
 }
 
 # object conversion
-.cosa2mdes <- function(x){
+.cosa2mdes <- function(x, score = NULL){
   if(inherits(x, "cosa")){
     design <- class(x)[2]
     nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
     fun <- paste("mdes", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    if(is.null(score)) {
+      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
+             parms$dists  <- "normal", parms$dists <- "uniform")
+    } else {
+      parms$score <- score
+    }
+
     parms$p <- x$cosa[nlevels + 1]
     parms$n1 <- x$cosa[1]
     if(nlevels >= 2) {
@@ -551,10 +481,45 @@
   }
 }
 
-.power2mdes <- function(x){
+.cosa2power <- function(x, score = NULL){
+  if(inherits(x, "cosa")){
+    design <- class(x)[2]
+    nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
+    fun <- paste("power", class(x)[2], sep = ".")
+    parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    if(is.null(score)) {
+      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
+             parms$dists  <- "normal", parms$dists <- "uniform")
+    } else {
+      parms$score <- score
+    }
+    parms$p <- x$cosa[nlevels + 1]
+    parms$n1 <- x$cosa[1]
+    if(nlevels >= 2) {
+      parms$n2 <- x$cosa[2]
+    }
+    if(nlevels >= 3) {
+      parms$n3 <- x$cosa[3]
+    }
+    if(nlevels == 4) {
+      parms$n4 <- x$cosa[4]
+    }
+    return(invisible(do.call(fun, parms)))
+  }else{
+    stop("x should be an object returned from COSA functions", call.=FALSE)
+  }
+}
+
+.power2mdes <- function(x, score = NULL){
   if(inherits(x, "power")){
     fun <- paste("mdes", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    if(is.null(score)) {
+      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
+             parms$dists  <- "normal", parms$dists <- "uniform")
+    } else {
+      parms$score <- score
+    }
     parms$power <- x$power
     return(invisible(do.call(fun, parms)))
   }else{
@@ -562,33 +527,16 @@
   }
 }
 
-.cosa2power <- function(x){
-  if(inherits(x, "cosa")){
-    design <- class(x)[2]
-    nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
-    fun <- paste("power", class(x)[2], sep = ".")
-    parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
-    parms$p <- x$cosa[nlevels + 1]
-    parms$n1 <- x$cosa[1]
-    if(nlevels >= 2) {
-      parms$n2 <- x$cosa[2]
-    }
-    if(nlevels >= 3) {
-      parms$n3 <- x$cosa[3]
-    }
-    if(nlevels == 4) {
-      parms$n4 <- x$cosa[4]
-    }
-    return(invisible(do.call(fun, parms)))
-  }else{
-    stop("x should be an object returned from COSA functions", call.=FALSE)
-  }
-}
-
-.mdes2power <- function(x){
+.mdes2power <- function(x, score = NULL){
   if(inherits(x, "mdes")){
     fun <- paste("power", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
+    if(is.null(score)) {
+      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
+             parms$dists  <- "normal", parms$dists <- "uniform")
+    } else {
+      parms$score <- score
+    }
     parms$es<- x$mdes[1]
     return(invisible(do.call(fun, parms)))
   }else{

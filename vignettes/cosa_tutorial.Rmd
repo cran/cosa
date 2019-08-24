@@ -1,6 +1,6 @@
 ---
-title: "<h1 style = 'color: grey;'> Bound Constrained Optimal Design of Multilevel Regression Discontinuity Designs and Randomized Controlled Trials </h1>"
-author: "Metin Bulus"
+title: "<span style = 'color: grey;'> Bound Constrained Optimal Design of Multilevel Regression Discontinuity Designs and Randomized Controlled Trials </span>"
+author: "Metin Bulus & Nianbo Dong"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
@@ -27,42 +27,58 @@ The following examples demonstrate how to perform bound constrained optimal samp
 ## Primary Constraint on the Total Cost
 
 ```{r, message=FALSE, fig.width=7, fig.height=5}
-# CRT('rhots = 0')
 # cost constrained - optimize p and n2
-crt <- cosa.crd2r2(rhots = 0,
+# CRT('order = 0' or 'rhots = 0')
+crt <- cosa.crd2r2(order = 0,
                    constrain = "cost", cost = 12500, 
                    cn1 = c(5, 2), cn2 = c(50, 20),
                    es = .20,  power = .80, rho2 = .20,
-                   g2 = 5, r21 = .20, r22 = .30,
-                   p = NULL, n1 = 24,  n2 = NULL)
-# CRD
-# cost constrained - optimize n2
-crd <- cosa.crd2r2(constrain = "cost", cost = 12500,
-                   cn1 = c(5, 2), cn2 = c(50, 20),
-                   es = .20,  power = .80, rho2 = .20,
-                   g2 = 5, r21 = .20, r22 = .30,
-                   p = .387, n1 = 24,  n2 = NULL)
+                   g2 = 5, r21 = .20, r22 = .30, 
+                   p = NULL, n1 = 20,  n2 = NULL)
+# comparisons to CRDs
+# CRD w/ linear score variable
+crd1 <- cosa.crd2r2(order = 1,
+                    constrain = "cost", cost = 12500,
+                    cn1 = c(5, 2), cn2 = c(50, 20),
+                    es = .20,  power = .80, rho2 = .20,
+                    g2 = 5, r21 = .20, r22 = .30,
+                    p = .386, n1 = 24,  n2 = NULL)
+# CRD w/ linear + quadratic score variable
+crd2 <- cosa.crd2r2(order = 2,
+                    constrain = "cost", cost = 12500,
+                    cn1 = c(5, 2), cn2 = c(50, 20),
+                    es = .20,  power = .80, rho2 = .20,
+                    g2 = 5, r21 = .20, r22 = .30,
+                    p = .386, n1 = 24,  n2 = NULL)
 
 # example plots
-par(mfrow = c(1, 2), mai = c(1, .9, .5, .2))
+par(mfrow = c(2, 3), mai = c(.6, .6, .6, .2))
 # compare minimum detectable effect size and 95% CI
 plot(crt, ypar = "mdes", xpar = "n2",
-     ylim = c(0, 1), xlim = c(10, 200), 
+     ylim = c(.10, .50), xlim = c(10, 200), 
      ylab = "MDES (with Power = .80)", xlab = "Number of Clusters",
-     main = "CRT", locate = TRUE)
-plot(crd, ypar = "mdes", xpar = "n2",
-     ylim = c(0, 1), xlim = c(10, 200),
+     main = expression(CRT), locate = TRUE)
+plot(crd1, ypar = "mdes", xpar = "n2",
+     ylim = c(.10, .50), xlim = c(10, 200),
      ylab = "MDES (with Power = .80)", xlab = "Number of Clusters",
-     main = "CRD", locate = TRUE)
+     main = expression(CRD(S)), locate = TRUE)
+plot(crd2, ypar = "mdes", xpar = "n2",
+     ylim = c(.10, .50), xlim = c(10, 200),
+     ylab = "MDES (with Power = .80)", xlab = "Number of Clusters",
+     main = expression(CRD (S + S^2)), locate = TRUE)
 # compare statistical power 
 plot(crt, ypar = "power", xpar = "n2",
-     ylim = c(0, 1), xlim = c(10, 200), 
+     ylim = c(.10, .85), xlim = c(10, 200), 
      ylab = "Power (for ES = .20)", xlab = "Number of Clusters",
-     main = "CRT", locate = TRUE)
-plot(crd, ypar = "power", xpar = "n2",
-     ylim = c(0, 1), xlim = c(10, 200), 
+     main = expression(CRT), locate = TRUE)
+plot(crd1, ypar = "power", xpar = "n2",
+     ylim = c(.10, .85), xlim = c(10, 200), 
      ylab = "Power (for ES = .20)", xlab = "Number of Clusters",
-     main = "CRD", locate = TRUE)
+     main = expression(CRD(S)), locate = TRUE)
+plot(crd2, ypar = "power", xpar = "n2",
+     ylim = c(.10, .85), xlim = c(10, 200), 
+     ylab = "Power (for ES = .20)", xlab = "Number of Clusters",
+     main = expression(CRD (S + S^2)), locate = TRUE)
 
 ```
 
@@ -71,51 +87,69 @@ As seen from the MDES and power plots, a little less than 150 clusters are neede
 ## Primary Constraint on the Effect Size
 
 ```{r, message=FALSE}
-# CRT('rhots = 0')
 # cost constrained - optimize p and n2
-cosa.crd2r2(rhots = 0,
-            constrain = "es", es = .20,
+# CRT('order = 0' or 'rhots = 0')
+cosa.crd2r2(order = 0,
+            constrain = "es", es = .20,  
             cn1 = c(5, 2), cn2 = c(50, 20),
             power = .80, rho2 = .20,
-            g2 = 5, r21 = .20, r22 = .30,
-            p = NULL, n1 = 24,  n2 = NULL)
-
-# CRD
-# cost constrained - optimize n2
-cosa.crd2r2(constrain = "es", es = .20,
-            power = .80, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30, 
+            p = NULL, n1 = 20,  n2 = NULL)
+# comparisons to CRDs
+# CRD w/ linear score variable
+cosa.crd2r2(order = 1,
+            constrain = "es", es = .20,  
             cn1 = c(5, 2), cn2 = c(50, 20),
+            power = .80, rho2 = .20,
             g2 = 5, r21 = .20, r22 = .30,
             p = .386, n1 = 24,  n2 = NULL)
+# CRD w/ linear + quadratic score variable
+cosa.crd2r2(order = 2,
+            constrain = "es", es = .20,  
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            power = .80, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30,
+            p = .386, n1 = 24,  n2 = NULL)
+
 ```
 
 ## Primary Constraint on the Power Rate
 
 ```{r, message=FALSE}
-# CRT('rhots = 0')
 # cost constrained - optimize p and n2
-cosa.crd2r2(rhots = 0, 
-            constrain = "power", power = .80,
+# CRT('order = 0' or 'rhots = 0')
+cosa.crd2r2(order = 0,
+            constrain = "power", power = .80, 
             cn1 = c(5, 2), cn2 = c(50, 20),
             es = .20, rho2 = .20,
-            g2 = 5, r21 = .20, r22 = .30,
-            p = NULL, n1 = 24,  n2 = NULL)
-# the cost reduction for using an unbalanced design might be trivial
-# fix p = .50 to obtain the cost under the balanced design for comparison
-cosa.crd2r2(rhots = 0, 
-            constrain = "power", power = .80,
-            cn1 = c(5, 2), cn2 = c(50, 20),
-            es = .20, rho2 = .20,
-            g2 = 5, r21 = .20, r22 = .30,
-            p = .50, n1 = 24,  n2 = NULL)
-
-# CRD
-# cost constrained - optimize n2
-cosa.crd2r2(constrain = "power", power = .80,
+            g2 = 5, r21 = .20, r22 = .30, 
+            p = NULL, n1 = 20,  n2 = NULL)
+# comparisons to CRDs
+# CRD w/ linear score variable
+cosa.crd2r2(order = 1,
+            constrain = "power", power = .80, 
             cn1 = c(5, 2), cn2 = c(50, 20),
             es = .20, rho2 = .20,
             g2 = 5, r21 = .20, r22 = .30,
             p = .386, n1 = 24,  n2 = NULL)
+# CRD w/ linear + quadratic score variable
+cosa.crd2r2(order = 2,
+            constrain = "power", power = .80,  
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            es = .20, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30,
+            p = .386, n1 = 24,  n2 = NULL)
+
 ```
 
+## Balanced Case in CRTs
+```{r}
+# fix 'p = .50' to inpsect cost for the balanced case
+cosa.crd2r2(order = 0,
+            constrain = "power", power = .80, 
+            cn1 = c(5, 2), cn2 = c(50, 20),
+            es = .20, rho2 = .20,
+            g2 = 5, r21 = .20, r22 = .30, 
+            p = .50, n1 = 20,  n2 = NULL)
+```
 --o--

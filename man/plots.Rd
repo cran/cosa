@@ -30,7 +30,7 @@
 
 \arguments{
   \item{x}{an object returned from functions in \pkg{cosa} package.}
-  \item{ypar}{character; \code{"mdes"} or  \code{"power"} on \code{y} axis .}
+  \item{ypar}{character; \code{"mdes"} or  \code{"power"} on \code{y} axis.}
   \item{xpar}{character; one of the sample sizes on \code{x} axis.}
   \item{xlim}{limits for \code{xpar}.}
   \item{ylim}{limits for \code{ypar}.}

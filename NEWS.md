@@ -1,11 +1,16 @@
+### Changes in the cosa 2.0.0
+ - Functions can accomodate quadratic functional forms for the score variable
+ - Users can override default degrees of freedom
+ - A few minor changes to naming conventions
+
 ### Changes in the cosa 1.2.2
  - Added `vectorize.cosa()` function, which makes it convenient to run and compare multiple designs
  - Removed MMA and COBYLA optimizers from default options
  
 ### Changes in the cosa 1.2.1
- - Removed experimental wrapper functions `cosa()`, `mdes()` and `power()` removed
+ - Removed experimental wrapper functions `cosa()`, `mdes()` and `power()`
  - Summaries are printed with the function call
- - Allows users to specify benchmark value in the plots
+ - Users can specify benchmark values in plots
  - Changed the package title
 
 ### Changes in the cosa 1.2.0

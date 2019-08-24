@@ -3,14 +3,14 @@ citHeader("To cite cosa in publications use:")
 bibentry(bibtype = "Manual",
   title        = "{cosa}: Bound Constrained Optimal Sample Allocation",
   author       = as.person("Metin Bulus, Nianbo Dong"),
-  note         = "R package version 1.2.2",
+  note         = "R package version 2.0.0",
   year         = "2019",
   url = "https://CRAN.R-project.org/package=cosa",
 
   textVersion  =
   paste("Bulus, M. & Dong, N. (2019).",
         "cosa:  Bound Constrained Optimal Sample Allocation.",
-        "R package version 1.2.2.",
+        "R package version 2.0.0.",
         "https://CRAN.R-project.org/package=cosa")
 )
 

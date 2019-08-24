@@ -5,10 +5,10 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
                                                  locate = FALSE, benchmark = NULL, ...) {
 
   if(!inherits(x, "mdes") & !inherits(x, "power") & !inherits(x, "cosa")) {
-    stop("'x' should be an object returned from functions in 'cosa' package")
+    stop("'x' should be an object returned from functions in the 'cosa' library")
   }
   if(inherits(x, "main") | inherits(x, "mod") | inherits(x, "med")) {
-    stop("'x' should be an object returned from functions in 'cosa' package")
+    stop("'x' should be an object returned from functions in the 'cosa' library")
   }
   if(!is.logical(locate)) {
     stop("Non-logical value for argument 'locate'", call. = FALSE)
@@ -52,15 +52,15 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
     if(is.null(xlim)) {
       if(block == "r") {
         xseq <- switch(nlevels,
-                       "1"= seq(round(x$parms$g1) + 3, 1.5 * round(x$parms$n1), by = .5),
-                       "2"= seq(round(x$parms$g2) + 3, 1.5 * round(x$parms$n2), by = .5),
-                       "3"= seq(round(x$parms$g3) + 3, 1.5 * round(x$parms$n3), by = .5),
-                       "4"= seq(round(x$parms$g4) + 3, 1.5 * round(x$parms$n4), by = .5))
+                       "1"= seq(round(x$parms$g1) + x$parms$order + 3, 1.5 * round(x$parms$n1), by = .5),
+                       "2"= seq(round(x$parms$g2) + x$parms$order + 3, 1.5 * round(x$parms$n2), by = .5),
+                       "3"= seq(round(x$parms$g3) + x$parms$order + 3, 1.5 * round(x$parms$n3), by = .5),
+                       "4"= seq(round(x$parms$g4) + x$parms$order + 3, 1.5 * round(x$parms$n4), by = .5))
       } else {
         xseq <- switch(nlevels,
-                       "2"= seq(round(x$parms$g1) + 3, 1.5 * round(x$parms$n1), by = .5),
-                       "3"= seq(round(x$parms$g2) + 3, 1.5 * round(x$parms$n2), by = .5),
-                       "4"= seq(round(x$parms$g3) + 3, 1.5 * round(x$parms$n3), by = .5))
+                       "2"= seq(round(x$parms$g1) + x$parms$order + 3, 1.5 * round(x$parms$n1), by = .5),
+                       "3"= seq(round(x$parms$g2) + x$parms$order + 3, 1.5 * round(x$parms$n2), by = .5),
+                       "4"= seq(round(x$parms$g3) + x$parms$order + 3, 1.5 * round(x$parms$n3), by = .5))
       }
     } else {
       if(!is.numeric(xlim)) {

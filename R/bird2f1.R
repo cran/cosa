@@ -1,54 +1,63 @@
-mdes.bird2f1 <- function(power = .80, alpha = .05, two.tailed = TRUE,
-                        rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
-                        r21 = 0, g1 = 0, p = .50, n1, n2 = 1) {
+mdes.bird2f1 <- function(score = NULL, order = 2, rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
+                         power = .80, alpha = .05, two.tailed = TRUE, df = n2 * (n1 - 2) - g1 - order,
+                         r21 = 0, g1 = 0, rate.tp = 1, rate.cc = 0, p = .50, n1, n2 = 1) {
 
-  ss <- c(n1, n2, g1)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 3){
-    stop("Incorrect value for sample size or number of covariates", call. = FALSE)
-  }
+  user.parms <- as.list(match.call())
+  .error.handler(user.parms)
 
-  if(any(r21 < 0) || any(r21 > 1) || !is.numeric(r21) || length(r21) > 1){
-    stop("Incorrect value for [0, 1] bounded arguments", call. = FALSE)
-  }
+  if(df < 1) stop("Insufficient degrees of freedom", call. = FALSE)
+  if(!is.null(score) && order == 0) warning("Ignoring information from score object \n", call. = FALSE)
 
-  rate <- c(p, power, alpha)
-  if(any(rate < .01) || any(rate > .99) || !is.numeric(rate) || length(rate) > 3){
-    stop("Incorrect value for [.01, .99] bounded arguments", call. = FALSE)
-  }
-
-  if(!is.logical(two.tailed) || length(two.tailed) > 1){
-    stop("Non-logical value for 'two.tailed'", call. = FALSE)
-  }
-
-  if(any(n1 - g1 < 3)){
-    stop("Insufficient sample size, increase 'n1'", call. = FALSE)
+  if(!is.null(rhots)) {
+    if(rhots == 0) {
+      if(order != 0) {
+        order <- 0
+        warning("'order' argument is ignored, 'order = 0' because 'rhots = 0'", call. = FALSE)
+      }
+      warning("'rhots' argument will be removed in the future,
+               for corresponding random assignment designs use 'order = 0' instead", call. = FALSE)
+    } else {
+      stop("'rhots' argument will be removed in the future, arbitrary correlations are not allowed,
+              use inspect.score() function instead", call. = FALSE)
+    }
   }
 
-  user.call <- as.list(sys.call())
-  names.user.call <- names(user.call)
-  if("r2" %in%  names.user.call) {
-    r21 <- user.call$r2
-    warning("'r2' is renamed as 'r21' and will be removed from the next version", call. = FALSE)
-  }
-  if("g" %in%  names.user.call) {
-    g1 <- user.call$g
-    warning("'g' is renamed as 'g1' and will be removed from the next version", call. = FALSE)
-  }
-  if("n" %in%  names.user.call) {
-    n1 <- user.call$n
-    warning("'n' is renamed as 'n1' and will be removed from the next version", call. = FALSE)
+  if(is.null(score)) {
+    capture.output({
+      score <- inspect.score(p = p, k1 = k1, k2 = k2, dists = dists)
+    })
+  } else {
+    if("p" %in% names(user.parms)) {
+      warning("Using 'p' from 'score' object, ignoring 'p' in the function call", call. = FALSE)
+    }
+    if(!inherits(score, "score")) {
+      stop("'score' object should inherit 'score' class", call. = FALSE)
+    }
   }
 
-  df <- n1 - g1 - 2 - (n1 - 2) * (1 - n2)
-  d <- .d(p, k1, k2, dists, rhots)
-  sse <- sqrt(d * (1 - r21) / (p * (1 - p) * n1 * n2))
+  p <- score$p
+  ifelse(order == 2,
+         d <- score$d2,
+         ifelse(order == 1,
+                d <- score$d1,
+                d <- 1))
+
+  if(order == 0) {
+    score$parms$dists <- "uniform"
+    score$parms$k1 <- 0
+    score$parms$k2 <- 1
+  }
+
+  sse <- (1/(rate.tp - rate.cc)) * sqrt(d * (1 - r21) / (p * (1 - p) * n1 * n2))
 
   mdes <- .mdes(power, alpha, sse, df, two.tailed)
   colnames(mdes) <- c("mdes", paste0(100 * (1 - round(alpha, 2)), "%lcl"),
                       paste0(100 * (1 - round(alpha, 2)), "%ucl"))
-  mdes.out <- list(parms = list(power = power, alpha = alpha, two.tailed = two.tailed,
-                                rhots = rhots, k1 = k1, k2 = k2, dists = dists,
-                                r21 = r21, g1 = g1, p = p, n1 = n1, n2 = n2),
+  mdes.out <- list(parms = list(order = order, dists = score$parms$dists,
+                                k1 = score$parms$k1, k2 = score$parms$k2,
+                                power = power, alpha = alpha, two.tailed = two.tailed,
+                                r21 = r21, g1 = g1, rate.tp = rate.tp, rate.cc = rate.cc,
+                                p = p, n1 = n1, n2 = n2),
                    df = df,
                    sse = sse,
                    mdes = mdes)
@@ -57,63 +66,64 @@ mdes.bird2f1 <- function(power = .80, alpha = .05, two.tailed = TRUE,
   return(invisible(mdes.out))
 }
 
-# example
-# mdes.bird2f1(n1 = 400, g1 = 3, r21 = .50)
+power.bird2f1 <- function(score = NULL, order = 2, rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
+                          es = .25, alpha = .05, two.tailed = TRUE, df = n2 * (n1 - 2) - g1 - order,
+                          r21 = 0, g1 = 0, rate.tp = 1, rate.cc = 0, p = .50, n1, n2 = 1) {
 
-power.bird2f1 <- function(es = .25, alpha = .05, two.tailed = TRUE,
-                         rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
-                         r21 = 0, g1 = 0,
-                         p = .50, n1, n2 = 1) {
+  user.parms <- as.list(match.call())
+  .error.handler(user.parms)
 
-  ss <- c(n1, n2, g1)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 3){
-    stop("Incorrect value for sample size or number of covariates", call. = FALSE)
+  if(df < 1) stop("Insufficient degrees of freedom", call. = FALSE)
+  if(!is.null(score) && order == 0) warning("Ignoring information from score object \n", call. = FALSE)
+
+  if(!is.null(rhots)) {
+    if(rhots == 0) {
+      if(order != 0) {
+        order <- 0
+        warning("'order' argument is ignored, 'order = 0' because 'rhots = 0'", call. = FALSE)
+      }
+      warning("'rhots' argument will be removed in the future,
+               for corresponding random assignment designs use 'order = 0' instead", call. = FALSE)
+    } else {
+      stop("'rhots' argument will be removed in the future, arbitrary correlations are not allowed,
+              use inspect.score() function instead", call. = FALSE)
+    }
   }
 
-  if(any(r21 < 0) || any(r21 > 1) || !is.numeric(r21) || length(r21) > 1){
-    stop("Incorrect value for [0, 1] bounded arguments", call. = FALSE)
+  if(is.null(score)) {
+    capture.output({
+      score <- inspect.score(p = p, k1 = k1, k2 = k2, dists = dists)
+    })
+  } else {
+    if("p" %in% names(user.parms)) {
+      warning("Using 'p' from 'score' object, ignoring 'p' in the function call", call. = FALSE)
+    }
+    if(!inherits(score, "score")) {
+      stop("'score' object should inherit 'score' class", call. = FALSE)
+    }
   }
 
-  rate <- c(p, alpha)
-  if(any(rate < .01) || any(rate > .99) || !is.numeric(rate) || length(rate) > 2){
-    stop("Incorrect value for [.01, .99] bounded arguments", call. = FALSE)
+  p <- score$p
+  ifelse(order == 2,
+         d <- score$d2,
+         ifelse(order == 1,
+                d <- score$d1,
+                d <- 1))
+
+  if(order == 0) {
+    score$parms$dists <- "uniform"
+    score$parms$k1 <- 0
+    score$parms$k2 <- 1
   }
 
-  if(!is.logical(two.tailed) || length(two.tailed) > 1){
-    stop("Non-logical value for 'two.tailed'", call. = FALSE)
-  }
-
-  if(any(n1 - g1 < 3)){
-    stop("Insufficient sample size, increase 'n1'", call. = FALSE)
-  }
-
-  if(any(es <= 0) || !is.numeric(es) || length(es) > 1){
-    stop("Incorrect value for 'es'", call. = FALSE)
-  }
-
-  user.call <- as.list(sys.call())
-  names.user.call <- names(user.call)
-  if("r2" %in%  names.user.call) {
-    r21 <- user.call$r2
-    warning("'r2' is renamed as 'r21' and will be removed from the next version", call. = FALSE)
-  }
-  if("g" %in%  names.user.call) {
-    g1 <- user.call$g
-    warning("'g' is renamed as 'g1' and will be removed from the next version", call. = FALSE)
-  }
-  if("n" %in%  names.user.call) {
-    n1 <- user.call$n
-    warning("'n' is renamed as 'n1' and will be removed from the next version", call. = FALSE)
-  }
-
-  df <- n1 - g1 - 2 - (n1 - 2) * (1 - n2)
-  d <- .d(p, k1, k2, dists, rhots)
-  sse <- sqrt(d * (1 - r21) / (p * (1 - p) * n1 * n2))
+  sse <- (1/(rate.tp - rate.cc)) * sqrt(d * (1 - r21) / (p * (1 - p) * n1 * n2))
 
   power <- .power(es, alpha, sse, df, two.tailed)
-  power.out <-  list(parms = list(es = es, alpha = alpha, two.tailed = two.tailed,
-                                  rhots = rhots, k1 = k1, k2 = k2, dists = dists,
-                                  r21 = r21, g1 = g1, p = p, n1 = n1, n2 = n2),
+  power.out <-  list(parms = list(order = order, dists = score$parms$dists,
+                                  k1 = score$parms$k1, k2 = score$parms$k2,
+                                  es = es, alpha = alpha, two.tailed = two.tailed,
+                                  r21 = r21, g1 = g1, rate.tp = rate.tp, rate.cc = rate.cc,
+                                  p = p, n1 = n1, n2 = n2),
                      df = df,
                      sse = sse,
                      power = power)
@@ -121,58 +131,77 @@ power.bird2f1 <- function(es = .25, alpha = .05, two.tailed = TRUE,
   .summary.power(power.out)
   return(invisible(power.out))
 }
-# example
-# power.bird2f1(es = 0.466, n1 = 400, g1 = 3)
 
-cosa.bird2f1 <- function(cn1 = 0, cn2 = 0, cost = NULL,
-                        n1 = NULL, n2 = NULL, p = NULL, n0 = c(400 + g1, 5), p0 = .499,
-                        constrain = "power", round = TRUE, max.power = FALSE,
-                        local.solver = c("LBFGS", "SLSQP"),
-                        rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
-                        power = .80, es = .25, alpha = .05, two.tailed = TRUE,
-                        g1 = 0, r21 = 0) {
+cosa.bird2f1 <- function(score = NULL, order = 2, rhots = NULL,
+                         k1 = -6, k2 = 6, dists = "normal",
+                         cn1 = 0, cn2 = 0, cost = NULL,
+                         n1 = NULL, n2 = NULL, p = NULL,
+                         n0 = c(400 + g1, 5), p0 = .499,
+                         constrain = "power", round = TRUE, max.power = FALSE,
+                         local.solver = c("LBFGS", "SLSQP"),
+                         power = .80, es = .25, alpha = .05, two.tailed = TRUE,
+                         g1 = 0, r21 = 0) {
 
-  ss <- c(n1, n2, g1)
-  if(any(ss < 0) || !is.numeric(ss) || length(ss) > 5){
-    stop("Incorrect value for sample size or number of covariates", call. = FALSE)
+  user.parms <- as.list(match.call())
+  .error.handler(user.parms)
+
+  if(!is.null(rhots)) {
+    if(rhots == 0) {
+      if(order != 0) {
+        order <- 0
+        warning("'order' argument is ignored, 'order = 0' because 'rhots = 0'", call. = FALSE)
+      }
+      warning("'rhots' argument will be removed in the future,
+               for corresponding random assignment designs use 'order = 0' instead", call. = FALSE)
+    } else {
+      stop("'rhots' argument will be removed in the future, arbitrary correlations are not allowed,
+              use inspect.score() function instead", call. = FALSE)
+    }
   }
 
-  if(any(r21 < 0) || any(r21 > 1) || !is.numeric(r21) || length(r21) > 1){
-    stop("Incorrect value for [0, 1] bounded arguments", call. = FALSE)
-  }
-
-  rate <- c(alpha, power)
-  if(any(rate < .01) || any(rate > .99) || !is.numeric(rate) || length(rate) > 2){
-    stop("Incorrect value for [.01, .99] bounded arguments", call. = FALSE)
-  }
-
-  if(!is.logical(two.tailed) || length(two.tailed) > 1){
-    stop("Non-logical value for 'two.tailed'", call. = FALSE)
-  }
-
-  if(!is.logical(max.power) || length(max.power) > 1){
-    stop("Non-logical value for 'max.power'", call. = FALSE)
-  }
-
-  if(any(n1 - g1 < 3)){
-    stop("Insufficient sample size, increase 'n1'", call. = FALSE)
-  }
-
-  if(any(es <= 0) || !is.numeric(es) || length(es) > 1){
-    stop("Incorrect value for 'es'", call. = FALSE)
+  if(!is.null(p)) {
+    if(is.null(score)) {
+      capture.output({
+        score <- inspect.score(p = p, k1 = k1, k2 = k2, dists = dists)
+      })
+    } else {
+      warning("Using 'p' from 'score' object, ignoring 'p' in the function call", call. = FALSE)
+    }
+    p <- score$p
+    ifelse(order == 2,
+           d <- score$d2,
+           ifelse(order == 1,
+                  d <- score$d1,
+                  d <- 1))
+  } else {
+    if(order > 0) {
+      if(is.null(score)) {
+        stop("'order > 0' & 'p = NULL', p' cannot be NULL in regression discontinuity designs", call. = FALSE)
+      } else {
+        p <- score$p
+        ifelse(order == 2,
+               d <- score$d2,
+               d <- score$d1)
+      }
+    } else if(order == 0){
+      if(!is.null(score)) warning("Ignoring information from score object \n", call. = FALSE)
+      d <- 1
+      score$parms$dists <- "uniform"
+      score$parms$k1 <- 0
+      score$parms$k2 <- 1
+    }
   }
 
   fun <- "cosa.bird2f1"
-  lb <- c(g1 + 3, 1)
+  lb <- c(g1 + order + 3, 1)
 
-  .df <- quote(n2 * (n1 - 2) - g1)
+  .df <- quote(n2 * (n1 - 2) - g1 - order)
   .sse <- quote(sqrt(d * (1 - r21) / (p * (1 - p) * n2 * n1)))
   .cost <- quote(n2 * cn2 +
                    n2 * n1 * (cn1[2] + p * (cn1[1] - cn1[2])))
 
   # NOTE: numerical derivatives for equality constraint (on power) are not precise
   # possibly due to numerical instability resulting from small step size (machine precision)
-  # or round-off errors specific to designs with fixed effects
   .var.jacob <- expression(
     c(
       -d * (1 - r21) / (p * (1 - p) * n2 * n1^2),
@@ -197,28 +226,20 @@ cosa.bird2f1 <- function(cn1 = 0, cn2 = 0, cost = NULL,
   cosa <- .cosa(cn1 = cn1, cn2 = cn2, cost = cost,
                 constrain = constrain, round = round,
                 max.power = max.power, local.solver = local.solver,
+                order = order,
                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
-                rhots = rhots, k1 = k1, k2 = k2, dists = dists,
                 r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2)
   cosa.out <- list(parms = list(cn1 = cn1, cn2 = cn2, cost = cost,
                                 constrain = constrain, round = round,
                                 max.power = max.power, local.solver = local.solver,
                                 power = power, es = es, alpha = alpha, two.tailed = two.tailed,
-                                rhots = rhots, k1 = k1, k2 = k2, dists = dists,
+                                order = order, dists = score$parms$dists,
+                                k1 = score$parms$k1, k2 = score$parms$k2,
                                 r21 = r21, g1 = g1, p0 = p0, p = p, n0 = n0, n1 = n1, n2 = n2),
                    cosa = cosa)
   class(cosa.out) <- c("cosa", "bird2f1")
   .summary.cosa(cosa.out)
   return(invisible(cosa.out))
 }
-# examples
-# unconstrained
-# cosa.ird1r1(rhots = 0)
-# cosa.bird2f1(rhots = 0, n2 = 1)
-# constrained
-# cosa.ird1r1(cn1 = c(10,5), cost = 1000, constrain = "cost", p = .50)
-# cosa.bird2f1(cn1 = c(10,5), cn2 = 0, n2 = 1, cost = 1000, constrain = "cost", p = .50)
-# cosa.ird1r1(rhots = 0, cn1 = c(10,5), cost = 1000, constrain = "cost")
-# cosa.bird2f1(rhots = 0, cn1 = c(10,5), n2 = 1, cost = 1000, constrain = "cost")
 
 

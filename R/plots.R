@@ -1,4 +1,4 @@
-plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
+plot.power <- plot.cosa <- plot.mdes <- function(x, score = NULL, ypar = "mdes",  xpar = NULL,
                                                  xlim = NULL, ylim = NULL,
                                                  xlab = NULL, ylab = NULL,
                                                  main = NULL, sub = NULL,
@@ -17,15 +17,15 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
   ypar <- tolower(ypar)
   if(ypar == "mdes") {
     if(inherits(x, "power")) {
-      capture.output(x <- .power2mdes(x))
+      capture.output(x <- .power2mdes(x, score))
     } else if(inherits(x, "cosa")) {
-      capture.output(x <- .cosa2mdes(x))
+      capture.output(x <- .cosa2mdes(x, score))
     }
   } else if(ypar == "power") {
     if(inherits(x, "mdes")) {
-      capture.output(x <- .mdes2power(x))
+      capture.output(x <- .mdes2power(x, score))
     } else if(inherits(x, "cosa")) {
-      capture.output(x <- .cosa2power(x))
+      capture.output(x <- .cosa2power(x, score))
     }
   } else {
     stop("Incorrect value for 'ypar'")
@@ -34,6 +34,9 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
   design <- class(x)[2]
   block <- substr(design, nchar(design) - 1, nchar(design) - 1)
   nlevels <- substr(design, nchar(design) - 2, nchar(design) - 2)
+  order <- x$parms$order
+  inter <- x$parms$interaction
+
   N <- c("n1", "n2", "n3", "n4")
   if(is.null(xpar)) {
     if(block == "r") {
@@ -52,15 +55,15 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
     if(is.null(xlim)) {
       if(block == "r") {
         xseq <- switch(nlevels,
-                       "1"= seq(round(x$parms$g1) + x$parms$order + 3, 1.5 * round(x$parms$n1), by = .5),
-                       "2"= seq(round(x$parms$g2) + x$parms$order + 3, 1.5 * round(x$parms$n2), by = .5),
-                       "3"= seq(round(x$parms$g3) + x$parms$order + 3, 1.5 * round(x$parms$n3), by = .5),
-                       "4"= seq(round(x$parms$g4) + x$parms$order + 3, 1.5 * round(x$parms$n4), by = .5))
+                       "1"= seq(round(x$parms$g1) + order * (1 + inter) + 3, 1.5 * round(x$parms$n1), by = .5),
+                       "2"= seq(round(x$parms$g2) + order * (1 + inter) + 3, 1.5 * round(x$parms$n2), by = .5),
+                       "3"= seq(round(x$parms$g3) + order * (1 + inter) + 3, 1.5 * round(x$parms$n3), by = .5),
+                       "4"= seq(round(x$parms$g4) + order * (1 + inter) + 3, 1.5 * round(x$parms$n4), by = .5))
       } else {
         xseq <- switch(nlevels,
-                       "2"= seq(round(x$parms$g1) + x$parms$order + 3, 1.5 * round(x$parms$n1), by = .5),
-                       "3"= seq(round(x$parms$g2) + x$parms$order + 3, 1.5 * round(x$parms$n2), by = .5),
-                       "4"= seq(round(x$parms$g3) + x$parms$order + 3, 1.5 * round(x$parms$n3), by = .5))
+                       "2"= seq(round(x$parms$g1) + order * (1 + inter) + 3, 1.5 * round(x$parms$n1), by = .5),
+                       "3"= seq(round(x$parms$g2) + order * (1 + inter) + 3, 1.5 * round(x$parms$n2), by = .5),
+                       "4"= seq(round(x$parms$g3) + order * (1 + inter) + 3, 1.5 * round(x$parms$n3), by = .5))
       }
     } else {
       if(!is.numeric(xlim)) {
@@ -88,6 +91,11 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
     }
   }
 
+  if(x$parms$dists == "empirical") {
+    ifelse(is.null(score),
+           stop("Score object is missing", call. = FALSE),
+           x$parms$score <- score)
+  }
   names.parms <-  names(x$parms)
   idx <- match(xpar, names.parms)
   x0 <- x$parms[[idx]]
@@ -95,16 +103,18 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
 
   yout <- matrix(NA, nrow = length(xseq), ncol = 3)
   capture.output({
-    for(i in 1:length(xseq)) {
-      x$parms[[idx]] <- xseq[i]
-      if(tolower(ypar) == "mdes") {
-        yout[i,] <- do.call(paste("mdes", class(x)[2], sep = "."), x$parms)$mdes
-      } else if(tolower(ypar) == "power") {
-        yout[i,1] <- do.call(paste("power", class(x)[2], sep = "."), x$parms)$power
+  suppressWarnings({
+      for(i in 1:length(xseq)) {
+        #x$parms["p"]<- list(NULL)
+        x$parms[[idx]] <- xseq[i]
+        if(tolower(ypar) == "mdes") {
+          yout[i,] <- do.call(paste("mdes", class(x)[2], sep = "."), x$parms)$mdes
+        } else if(tolower(ypar) == "power") {
+          yout[i,1] <- do.call(paste("power", class(x)[2], sep = "."), x$parms)$power
+        }
       }
-
-    }
-  })
+  })#suppressWarnings
+  })#capture.output
 
   if(is.null(ylim)) {
     ifelse(ypar == "mdes",
@@ -112,14 +122,14 @@ plot.power <- plot.cosa <- plot.mdes <- function(x, ypar = "mdes",  xpar = NULL,
            ylim <- c(.01, .99))
   } else {
     if(!is.numeric(ylim)) {
-      stop("Incorret values for argument 'ylim'", call. = FALSE)
+      stop("Incorrect values for argument 'ylim'", call. = FALSE)
     }
     if(length(ylim) > 2) {
       ylim <- range(ylim)
     }
     if(ypar == "power") {
       if(min(ylim) < 0 | max(ylim) > 1) {
-        stop("Incorret values for argument 'ylim'", call. = FALSE)
+        stop("Incorrect values for argument 'ylim'", call. = FALSE)
       }
     }
   }

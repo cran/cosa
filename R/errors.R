@@ -1,9 +1,10 @@
-.error.handler <- function(x) {
+.error.handler <- function(x, fun = "power") {
 
   names.x <- names(x)
   if(any(!names.x %in% c("", "cost", "cn1", "cn2", "cn3", "cn4", "n0", "p0",
                          "constrain", "round", "max.power", "local.solver",
-                         "score", "order", "rhots", "k1", "k2", "dists",
+                         "score", "dists",  "k1", "k2", "rhots",
+                         "order", "interaction", "treat.lower", "cutoff",
                          "df", "n1", "n2", "n3", "n4", "g1", "g2", "g3", "g4",
                          "r21","r22","r23","r24", "r2t2", "r2t3", "r2t4",
                          "rho2", "rho3", "rho4", "omega2", "omega3", "omega4",
@@ -19,16 +20,24 @@
   names.x <- names(parms.notnull)
   x <- lapply(parms.notnull, eval)
 
-
   # validity check for sample sizes
   idx.n <- intersect(c("n1","n2","n3","n4", "df"),  names.x)
-  length.list.n <- length(unlist(x[idx.n]))
-  length.unlist.n <- length(x[idx.n])
+  length.unlist.n <- length(unlist(x[idx.n]))
+  length.list.n <- length(x[idx.n])
   if(length.list.n == length.unlist.n){
     if(any(x[idx.n] <= 0) ||
-       any(lapply(x[idx.n], function(x)!is.numeric(x)) == TRUE) ||
-       any(lapply(x[idx.n], length) > 1)) {
-      stop("Incorrect / insufficient sample size or degrees of freedom", call.=FALSE)
+       any(lapply(x[idx.n], function(x)!is.numeric(x)) == TRUE)) {
+      stop("Incorrect sample size or degrees of freedom", call.=FALSE)
+    }
+  } else {
+    if(fun == "cosa") {
+      # errro check for sample size in cosa functions
+      #if(any(x[idx.n] <= 0) ||
+      #   any(lapply(x[idx.n], function(x)!is.numeric(x)) == TRUE)) {
+      #  stop("Incorrect sample size or degrees of freedom", call.=FALSE)
+      #}
+    } else {
+      stop("Incorrect sample size or degrees of freedom", call.=FALSE)
     }
   }
 
@@ -64,7 +73,7 @@
       err.r2 <- names(x.r2[x.r2 > 0])
       err.g <- names(x.g[x.g == 0])
       if (any(substr(err.r2, nchar(err.r2), nchar(err.r2))== substr(err.g, 2, 2))){
-        warning("R-squared value for a level may not be greater than zero",
+        warning(paste(sQuote(err.r2), "GT 0 while", sQuote(err.g), "EQ 0? Except for blocked designs."),
                 call. = FALSE)
       }
     } else if (any(x[idx.r2] == 0) & x[idx.g] > 0) {
@@ -73,36 +82,53 @@
       err.r2 <- names(x.r2[x.r2 == 0])
       err.g <- names(x.g[x.g > 0])
       if (any(substr(err.r2, nchar(err.r2), nchar(err.r2)) == substr(err.g, 2, 2))) {
-        warning("R-squared value for a level may not be zero",
+        warning(paste(sQuote(err.r2), "EQ 0 while", sQuote(err.g), "GT 0?"),
                 call. = FALSE)
       }
     }
   }
 
-  # validity check for effect size
-  idx.es <- intersect(c("es"),  names.x)
-  if(any(lapply(x[idx.es], function(x)!is.numeric(x)) == TRUE) ||
-     any(lapply(x[idx.es], length) > 1) ||
-     any(x[idx.es] < 0)) {
-    stop("Incorrect value for effect size", call.=FALSE)
-  }
-  if(any(x[idx.es] > 5)) {
-    stop("Extreme value for effect size", call.=FALSE)
+  if("es" %in% names.x) {
+    if(is.na(x$es) ||
+       any(lapply(x$es, function(x)!is.numeric(x)) == TRUE) ||
+       any(lapply(x$es, length) > 1) ||
+       any(x$es < 0)) {
+      stop("Incorrect value for effect size", call.=FALSE)
+    }
+    if(any(x$es > 6)) {
+      warning("Extreme value for effect size (es > 6?)", call.=FALSE)
+    }
   }
 
-  # validty check for two-tailed test
   if("two.tailed" %in% names.x){
     if(!is.logical(x$two.tailed) || length(x$two.tailed) > 1 ){
       stop("Non-logical value for argument 'two.tailed'", call.=FALSE)
     }
   }
 
+  if("interaction" %in% names.x){
+    if(!is.logical(x$interaction) || length(x$interaction) > 1 ){
+      stop("Non-logical value for argument 'interaction'", call.=FALSE)
+    }
+  }
+
+  if("treat.lower" %in% names.x){
+    if(!is.logical(x$treat.lower) || length(x$treat.lower) > 1 ){
+      stop("Non-logical value for argument 'treat.lower'", call.=FALSE)
+    }
+  }
+
   if("order" %in% names.x){
-    if(x$order %% 1 != 0 || x$order < 0 || x$order > 2) {
+    if(x$order %% 1 != 0 || x$order < 0 || x$order > 8) {
       stop("'order' argument can take values:
-         0 (for randomized trials)
-         1 (for RDDs with linear functional form)
-         2 (for RDDs with linear and quadratic functional forms)", call. = FALSE)
+         0 (for random assignment designs)
+         1 to 8 (for regression discontinuity designs)", call. = FALSE)
+    }
+  }
+
+  if("constrain" %in% names.x & !"cost" %in% names.x){
+    if(x$constrain == "cost") {
+      stop("Primary constraint is placed on total cost but 'cost' argument is NULL", call. = FALSE)
     }
   }
 
@@ -116,7 +142,7 @@
     ifelse(!"rate.cc" %in% names.x, rate.cc <- 0, rate.cc <- x$rate.cc)
     ifelse(!"rate.tp" %in% names.x, rate.tp <- 1, rate.tp <- x$rate.tp)
     if(rate.tp != 1 | rate.cc != 0) {
-      message(cat("\nResults pertain to local average treatment effect (LATE)",
+      message(cat("\nLocal average treatment effect (LATE)",
                   "\nTreatment group participant rate =", rate.tp,
                   "\nControl group cross-over rate =", rate.cc, "\n"))
     }

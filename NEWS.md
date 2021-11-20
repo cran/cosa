@@ -1,3 +1,7 @@
+### Changes in the cosa 2.1.0
+ - Functions can accomodate polynomial functional forms for the score variable w/ or w/o interaction with the treatment variable
+ - Improvements to bound constrained optimization (e.g. removed two-stage optimization)
+ 
 ### Changes in the cosa 2.0.0
  - Functions can accomodate quadratic functional forms for the score variable
  - Users can override default degrees of freedom

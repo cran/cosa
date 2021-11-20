@@ -13,7 +13,7 @@
 
 <meta name="author" content="Metin Bulus &amp; Nianbo Dong" />
 
-<meta name="date" content="2019-08-24" />
+<meta name="date" content="2021-11-20" />
 
 <title> Bound Constrained Optimal Design of Multilevel Regression Discontinuity Designs and Randomized Controlled Trials</title>
 
@@ -304,7 +304,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore"><span style="color: grey;"> Bound Constrained Optimal Design of Multilevel Regression Discontinuity Designs and Randomized Controlled Trials </span></h1>
 <h4 class="author">Metin Bulus &amp; Nianbo Dong</h4>
-<h4 class="date">2019-08-24</h4>
+<h4 class="date">2021-11-20</h4>
 
 
 <div id="TOC">
@@ -312,30 +312,29 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <li><a href="#primary-constraint-on-the-total-cost">Primary Constraint on the Total Cost</a></li>
 <li><a href="#primary-constraint-on-the-effect-size">Primary Constraint on the Effect Size</a></li>
 <li><a href="#primary-constraint-on-the-power-rate">Primary Constraint on the Power Rate</a></li>
-<li><a href="#balanced-case-in-crts">Balanced Case in CRTs</a></li>
 </ul>
 </div>
 
 <p>To install and load the package:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">install.packages</span>(<span class="st">&quot;cosa&quot;</span>)</a>
 <a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(cosa)</a></code></pre></div>
-<p>The following examples demonstrate how to perform bound constrained optimal sample allocation (BCOSA) for a two-level cluster randomized trial (CRT) and for the corresponding cluster-level regression discontinuity (CRD) design under three primary constraints. Note: <code>NULL</code> arguments are provided for clarity, otherwise they do not have to be explicit.</p>
+<p>The following examples demonstrate how to perform bound constrained optimal sample size allocation (BCOSSA) for a two-level cluster randomized trial (CRT) and for the corresponding cluster-level regression discontinuity (CRD) design under three primary constraints. Note: <code>NULL</code> arguments are provided for clarity, otherwise they do not have to be explicit.</p>
 <div id="primary-constraint-on-the-total-cost" class="section level2">
 <h2>Primary Constraint on the Total Cost</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="co"># cost constrained - optimize p and n2</span></a>
 <a class="sourceLine" id="cb2-2" title="2"><span class="co"># CRT(&#39;order = 0&#39; or &#39;rhots = 0&#39;)</span></a>
-<a class="sourceLine" id="cb2-3" title="3">crt &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb2-4" title="4">                   <span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>, </a>
-<a class="sourceLine" id="cb2-5" title="5">                   <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb2-6" title="6">                   <span class="dt">es =</span> <span class="fl">.20</span>,  <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb2-7" title="7">                   <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
-<a class="sourceLine" id="cb2-8" title="8">                   <span class="dt">p =</span> <span class="ot">NULL</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb2-3" title="3">crt &lt;-<span class="st"> </span><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb2-4" title="4">                 <span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>, </a>
+<a class="sourceLine" id="cb2-5" title="5">                 <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb2-6" title="6">                 <span class="dt">es =</span> <span class="fl">.20</span>,  <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb2-7" title="7">                 <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
+<a class="sourceLine" id="cb2-8" title="8">                 <span class="dt">p =</span> <span class="ot">NULL</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
 <pre><code>## Solution converged with LBFGS 
 ## 
 ## Rounded solution: 
 ## --------------------------------------------------- 
 ##  [n1]  n2     p [cost]  mdes 95%lcl 95%ucl power
-##    20 132 0.386  12510 0.209  0.063  0.356 0.763
+##    20 132 0.386  12510 0.209  0.063  0.356 0.764
 ## --------------------------------------------------- 
 ## Per unit marginal costs: 
 ##  Level 1 treatment: 5 
@@ -344,25 +343,34 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##  Level 2 control: 20 
 ## --------------------------------------------------- 
 ## MDES = 0.209 (with power = 80) 
-## power = 0.763 (for ES = 0.2) 
+## power = 0.764 (for ES = 0.2) 
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## Random assignment design w/o score</code></pre>
+## Random assignment design</code></pre>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="co"># comparisons to CRDs</span></a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="co"># CRD w/ linear score variable</span></a>
-<a class="sourceLine" id="cb4-3" title="3">crd1 &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb4-4" title="4">                    <span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>,</a>
-<a class="sourceLine" id="cb4-5" title="5">                    <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb4-6" title="6">                    <span class="dt">es =</span> <span class="fl">.20</span>,  <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb4-7" title="7">                    <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
-<a class="sourceLine" id="cb4-8" title="8">                    <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with LBFGS 
+<a class="sourceLine" id="cb4-2" title="2"><span class="co"># CRD w/ linear score variable interacting with the treatment</span></a>
+<a class="sourceLine" id="cb4-3" title="3">crd1 &lt;-<span class="st"> </span><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">1</span>, <span class="dt">interaction =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb4-4" title="4">                  <span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>,</a>
+<a class="sourceLine" id="cb4-5" title="5">                  <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb4-6" title="6">                  <span class="dt">es =</span> <span class="fl">.20</span>,  <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb4-7" title="7">                  <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
+<a class="sourceLine" id="cb4-8" title="8">                  <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<pre><code>## 
+## RDDE for normal distribution 
+##  based on population moments--------------------------------------- 
+## Polynomial order = 1 
+## Interaction w/ treatment = TRUE 
+## Treat if score &lt; cutoff = TRUE 
+## Cutoff = -0.29 | p = 0.386 
+## RDDE = 2.736 
+## 
+## Solution converged with LBFGS 
 ## 
 ## Rounded solution: 
 ## --------------------------------------------------- 
 ##  [n1]  n2   [p] [cost]  mdes 95%lcl 95%ucl power
-##    24 116 0.388  12478 0.356  0.106  0.605 0.351
+##    24 116 0.388  12478 0.364  0.109  0.619 0.338
 ## --------------------------------------------------- 
 ## Per unit marginal costs: 
 ##  Level 1 treatment: 5 
@@ -370,25 +378,34 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##  Level 2 treatment: 50 
 ##  Level 2 control: 20 
 ## --------------------------------------------------- 
-## MDES = 0.356 (with power = 80) 
-## power = 0.351 (for ES = 0.2) 
+## MDES = 0.364 (with power = 80) 
+## power = 0.338 (for ES = 0.2) 
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## RD design w/ linear functional form</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="co"># CRD w/ linear + quadratic score variable</span></a>
-<a class="sourceLine" id="cb6-2" title="2">crd2 &lt;-<span class="st"> </span><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb6-3" title="3">                    <span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>,</a>
-<a class="sourceLine" id="cb6-4" title="4">                    <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb6-5" title="5">                    <span class="dt">es =</span> <span class="fl">.20</span>,  <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb6-6" title="6">                    <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
-<a class="sourceLine" id="cb6-7" title="7">                    <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with LBFGS 
+## Regression discontinuity design</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="co"># CRD w/ quadratic score variable interacting with the treatment</span></a>
+<a class="sourceLine" id="cb6-2" title="2">crd2 &lt;-<span class="st"> </span><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">2</span>, <span class="dt">interaction =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb6-3" title="3">                  <span class="dt">constrain =</span> <span class="st">&quot;cost&quot;</span>, <span class="dt">cost =</span> <span class="dv">12500</span>,</a>
+<a class="sourceLine" id="cb6-4" title="4">                  <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb6-5" title="5">                  <span class="dt">es =</span> <span class="fl">.20</span>,  <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb6-6" title="6">                  <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
+<a class="sourceLine" id="cb6-7" title="7">                  <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<pre><code>## 
+## RDDE for normal distribution 
+##  based on population moments--------------------------------------- 
+## Polynomial order = 2 
+## Interaction w/ treatment = TRUE 
+## Treat if score &lt; cutoff = TRUE 
+## Cutoff = -0.29 | p = 0.386 
+## RDDE = 4.992 
+## 
+## Solution converged with LBFGS 
 ## 
 ## Rounded solution: 
 ## --------------------------------------------------- 
 ##  [n1]  n2   [p] [cost]  mdes 95%lcl 95%ucl power
-##    24 116 0.388  12478 0.368   0.11  0.627 0.331
+##    24 116 0.388  12478 0.491  0.147  0.836 0.207
 ## --------------------------------------------------- 
 ## Per unit marginal costs: 
 ##  Level 1 treatment: 5 
@@ -396,53 +413,53 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##  Level 2 treatment: 50 
 ##  Level 2 control: 20 
 ## --------------------------------------------------- 
-## MDES = 0.368 (with power = 80) 
-## power = 0.331 (for ES = 0.2) 
+## MDES = 0.491 (with power = 80) 
+## power = 0.207 (for ES = 0.2) 
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## RD design w/ linear + quadratic functional form</code></pre>
+## Regression discontinuity design</code></pre>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="co"># example plots</span></a>
 <a class="sourceLine" id="cb8-2" title="2"><span class="kw">par</span>(<span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">3</span>), <span class="dt">mai =</span> <span class="kw">c</span>(.<span class="dv">6</span>, <span class="fl">.6</span>, <span class="fl">.6</span>, <span class="fl">.2</span>))</a>
 <a class="sourceLine" id="cb8-3" title="3"><span class="co"># compare minimum detectable effect size and 95% CI</span></a>
 <a class="sourceLine" id="cb8-4" title="4"><span class="kw">plot</span>(crt, <span class="dt">ypar =</span> <span class="st">&quot;mdes&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,</a>
-<a class="sourceLine" id="cb8-5" title="5">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.50</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>), </a>
+<a class="sourceLine" id="cb8-5" title="5">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.90</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">800</span>), </a>
 <a class="sourceLine" id="cb8-6" title="6">     <span class="dt">ylab =</span> <span class="st">&quot;MDES (with Power = .80)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,</a>
 <a class="sourceLine" id="cb8-7" title="7">     <span class="dt">main =</span> <span class="kw">expression</span>(CRT), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb8-8" title="8"><span class="kw">plot</span>(crd1, <span class="dt">ypar =</span> <span class="st">&quot;mdes&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,</a>
-<a class="sourceLine" id="cb8-9" title="9">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.50</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>),</a>
+<a class="sourceLine" id="cb8-9" title="9">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.90</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">800</span>),</a>
 <a class="sourceLine" id="cb8-10" title="10">     <span class="dt">ylab =</span> <span class="st">&quot;MDES (with Power = .80)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,</a>
-<a class="sourceLine" id="cb8-11" title="11">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span>(S)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb8-11" title="11">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span> (S <span class="op">+</span><span class="st"> </span>TS)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb8-12" title="12"><span class="kw">plot</span>(crd2, <span class="dt">ypar =</span> <span class="st">&quot;mdes&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,</a>
-<a class="sourceLine" id="cb8-13" title="13">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.50</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>),</a>
+<a class="sourceLine" id="cb8-13" title="13">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.90</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">800</span>),</a>
 <a class="sourceLine" id="cb8-14" title="14">     <span class="dt">ylab =</span> <span class="st">&quot;MDES (with Power = .80)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,</a>
-<a class="sourceLine" id="cb8-15" title="15">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span> (S <span class="op">+</span><span class="st"> </span>S<span class="op">^</span><span class="dv">2</span>)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb8-15" title="15">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span> (S <span class="op">+</span><span class="st"> </span>S<span class="op">^</span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span>TS <span class="op">+</span><span class="st"> </span>TS<span class="op">^</span><span class="dv">2</span>)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb8-16" title="16"><span class="co"># compare statistical power </span></a>
 <a class="sourceLine" id="cb8-17" title="17"><span class="kw">plot</span>(crt, <span class="dt">ypar =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,</a>
-<a class="sourceLine" id="cb8-18" title="18">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.85</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>), </a>
+<a class="sourceLine" id="cb8-18" title="18">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.85</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">800</span>), </a>
 <a class="sourceLine" id="cb8-19" title="19">     <span class="dt">ylab =</span> <span class="st">&quot;Power (for ES = .20)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,</a>
 <a class="sourceLine" id="cb8-20" title="20">     <span class="dt">main =</span> <span class="kw">expression</span>(CRT), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb8-21" title="21"><span class="kw">plot</span>(crd1, <span class="dt">ypar =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,</a>
-<a class="sourceLine" id="cb8-22" title="22">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.85</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>), </a>
+<a class="sourceLine" id="cb8-22" title="22">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.85</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">800</span>), </a>
 <a class="sourceLine" id="cb8-23" title="23">     <span class="dt">ylab =</span> <span class="st">&quot;Power (for ES = .20)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,</a>
-<a class="sourceLine" id="cb8-24" title="24">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span>(S)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb8-24" title="24">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span>(S <span class="op">+</span><span class="st"> </span>TS)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb8-25" title="25"><span class="kw">plot</span>(crd2, <span class="dt">ypar =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">xpar =</span> <span class="st">&quot;n2&quot;</span>,</a>
-<a class="sourceLine" id="cb8-26" title="26">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.85</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">200</span>), </a>
+<a class="sourceLine" id="cb8-26" title="26">     <span class="dt">ylim =</span> <span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.85</span>), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">800</span>), </a>
 <a class="sourceLine" id="cb8-27" title="27">     <span class="dt">ylab =</span> <span class="st">&quot;Power (for ES = .20)&quot;</span>, <span class="dt">xlab =</span> <span class="st">&quot;Number of Clusters&quot;</span>,</a>
-<a class="sourceLine" id="cb8-28" title="28">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span> (S <span class="op">+</span><span class="st"> </span>S<span class="op">^</span><span class="dv">2</span>)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
-<p>As seen from the MDES and power plots, a little less than 150 clusters are needed to obtain the benchmark power rate of 80% for the CRT (more than 200 clusters for the CRD). Precise number of clusters can be found via placing the primary constraint on either the effect size or power rate.</p>
+<a class="sourceLine" id="cb8-28" title="28">     <span class="dt">main =</span> <span class="kw">expression</span>(<span class="kw">CRD</span> (S <span class="op">+</span><span class="st"> </span>S<span class="op">^</span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span>TS <span class="op">+</span><span class="st"> </span>TS<span class="op">^</span><span class="dv">2</span>)), <span class="dt">locate =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>As seen from the MDES and power plots, a little less than 150 clusters are needed to obtain the benchmark power rate of 80% for the CRT, more than 350 cluster are needed for CRD with linear score variable interacting with the treatment, and more than 650 clusters are needed for CRD with quadratic score variable interacting with the treatment. Precise number of clusters can be found via placing the primary constraint on either the effect size or the power rate.</p>
 </div>
 <div id="primary-constraint-on-the-effect-size" class="section level2">
 <h2>Primary Constraint on the Effect Size</h2>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="co"># cost constrained - optimize p and n2</span></a>
 <a class="sourceLine" id="cb9-2" title="2"><span class="co"># CRT(&#39;order = 0&#39; or &#39;rhots = 0&#39;)</span></a>
-<a class="sourceLine" id="cb9-3" title="3"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb9-4" title="4">            <span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> <span class="fl">.20</span>,  </a>
-<a class="sourceLine" id="cb9-5" title="5">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb9-6" title="6">            <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb9-7" title="7">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
-<a class="sourceLine" id="cb9-8" title="8">            <span class="dt">p =</span> <span class="ot">NULL</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb9-3" title="3"><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb9-4" title="4">          <span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> <span class="fl">.20</span>,  </a>
+<a class="sourceLine" id="cb9-5" title="5">          <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb9-6" title="6">          <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb9-7" title="7">          <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
+<a class="sourceLine" id="cb9-8" title="8">          <span class="dt">p =</span> <span class="ot">NULL</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
 <pre><code>## Solution converged with SLSQP 
 ## 
 ## Rounded solution: 
@@ -461,21 +478,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## Random assignment design w/o score</code></pre>
+## Random assignment design</code></pre>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="co"># comparisons to CRDs</span></a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="co"># CRD w/ linear score variable</span></a>
-<a class="sourceLine" id="cb11-3" title="3"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb11-4" title="4">            <span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> <span class="fl">.20</span>,  </a>
-<a class="sourceLine" id="cb11-5" title="5">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb11-6" title="6">            <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb11-7" title="7">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
-<a class="sourceLine" id="cb11-8" title="8">            <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with SLSQP 
+<a class="sourceLine" id="cb11-2" title="2"><span class="co"># CRD w/ linear score variable interacting with the treatment</span></a>
+<a class="sourceLine" id="cb11-3" title="3"><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">1</span>, <span class="dt">interaction =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb11-4" title="4">          <span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> <span class="fl">.20</span>,  </a>
+<a class="sourceLine" id="cb11-5" title="5">          <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb11-6" title="6">          <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb11-7" title="7">          <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
+<a class="sourceLine" id="cb11-8" title="8">          <span class="dt">p =</span> <span class="fl">.389</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<pre><code>## 
+## RDDE for normal distribution 
+##  based on population moments--------------------------------------- 
+## Polynomial order = 1 
+## Interaction w/ treatment = TRUE 
+## Treat if score &lt; cutoff = TRUE 
+## Cutoff = -0.282 | p = 0.389 
+## RDDE = 2.737 
+## 
+## Solution converged with SLSQP 
 ## 
 ## Rounded solution: 
 ## --------------------------------------------------- 
 ##  [n1]  n2   [p]  cost [mdes] 95%lcl 95%ucl power
-##    24 363 0.386 38964    0.2   0.06   0.34   0.8
+##    24 379 0.388 40766    0.2   0.06   0.34   0.8
 ## --------------------------------------------------- 
 ## Per unit marginal costs: 
 ##  Level 1 treatment: 5 
@@ -488,20 +514,29 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## RD design w/ linear functional form</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co"># CRD w/ linear + quadratic score variable</span></a>
-<a class="sourceLine" id="cb13-2" title="2"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb13-3" title="3">            <span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> <span class="fl">.20</span>,  </a>
-<a class="sourceLine" id="cb13-4" title="4">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb13-5" title="5">            <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb13-6" title="6">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
-<a class="sourceLine" id="cb13-7" title="7">            <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with SLSQP 
+## Regression discontinuity design</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co"># CRD w/ quadratic score variable interacting with the treatment</span></a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">2</span>, <span class="dt">interaction =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb13-3" title="3">          <span class="dt">constrain =</span> <span class="st">&quot;es&quot;</span>, <span class="dt">es =</span> <span class="fl">.20</span>,  </a>
+<a class="sourceLine" id="cb13-4" title="4">          <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb13-5" title="5">          <span class="dt">power =</span> <span class="fl">.80</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb13-6" title="6">          <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
+<a class="sourceLine" id="cb13-7" title="7">          <span class="dt">p =</span> <span class="fl">.389</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<pre><code>## 
+## RDDE for normal distribution 
+##  based on population moments--------------------------------------- 
+## Polynomial order = 2 
+## Interaction w/ treatment = TRUE 
+## Treat if score &lt; cutoff = TRUE 
+## Cutoff = -0.282 | p = 0.389 
+## RDDE = 4.994 
+## 
+## Solution converged with SLSQP 
 ## 
 ## Rounded solution: 
 ## --------------------------------------------------- 
 ##  [n1]  n2   [p]  cost [mdes] 95%lcl 95%ucl power
-##    24 389 0.386 41752    0.2   0.06   0.34   0.8
+##    24 689 0.389 74188    0.2   0.06   0.34   0.8
 ## --------------------------------------------------- 
 ## Per unit marginal costs: 
 ##  Level 1 treatment: 5 
@@ -514,18 +549,18 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## RD design w/ linear + quadratic functional form</code></pre>
+## Regression discontinuity design</code></pre>
 </div>
 <div id="primary-constraint-on-the-power-rate" class="section level2">
 <h2>Primary Constraint on the Power Rate</h2>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="co"># cost constrained - optimize p and n2</span></a>
 <a class="sourceLine" id="cb15-2" title="2"><span class="co"># CRT(&#39;order = 0&#39; or &#39;rhots = 0&#39;)</span></a>
-<a class="sourceLine" id="cb15-3" title="3"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb15-4" title="4">            <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>, </a>
-<a class="sourceLine" id="cb15-5" title="5">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb15-6" title="6">            <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb15-7" title="7">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
-<a class="sourceLine" id="cb15-8" title="8">            <span class="dt">p =</span> <span class="ot">NULL</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb15-3" title="3"><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb15-4" title="4">          <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>, </a>
+<a class="sourceLine" id="cb15-5" title="5">          <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb15-6" title="6">          <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb15-7" title="7">          <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
+<a class="sourceLine" id="cb15-8" title="8">          <span class="dt">p =</span> <span class="ot">NULL</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
 <pre><code>## Solution converged with SLSQP 
 ## 
 ## Rounded solution: 
@@ -544,21 +579,65 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## Random assignment design w/o score</code></pre>
+## Random assignment design</code></pre>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="co"># comparisons to CRDs</span></a>
-<a class="sourceLine" id="cb17-2" title="2"><span class="co"># CRD w/ linear score variable</span></a>
-<a class="sourceLine" id="cb17-3" title="3"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb17-4" title="4">            <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>, </a>
-<a class="sourceLine" id="cb17-5" title="5">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb17-6" title="6">            <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb17-7" title="7">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
-<a class="sourceLine" id="cb17-8" title="8">            <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with SLSQP 
+<a class="sourceLine" id="cb17-2" title="2"><span class="co"># CRD w/ linear score variable interacting with the treatment</span></a>
+<a class="sourceLine" id="cb17-3" title="3"><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">1</span>, <span class="dt">interaction =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb17-4" title="4">          <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>, </a>
+<a class="sourceLine" id="cb17-5" title="5">          <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb17-6" title="6">          <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb17-7" title="7">          <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
+<a class="sourceLine" id="cb17-8" title="8">          <span class="dt">p =</span> <span class="fl">.389</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<pre><code>## 
+## RDDE for normal distribution 
+##  based on population moments--------------------------------------- 
+## Polynomial order = 1 
+## Interaction w/ treatment = TRUE 
+## Treat if score &lt; cutoff = TRUE 
+## Cutoff = -0.282 | p = 0.389 
+## RDDE = 2.737 
+## 
+## Solution converged with SLSQP 
 ## 
 ## Rounded solution: 
 ## --------------------------------------------------- 
 ##  [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
-##    24 363 0.386 38964  0.2   0.06   0.34     0.8
+##    24 378 0.389 40698  0.2   0.06   0.34   0.799
+## --------------------------------------------------- 
+## Per unit marginal costs: 
+##  Level 1 treatment: 5 
+##  Level 1 control: 2 
+##  Level 2 treatment: 50 
+##  Level 2 control: 20 
+## --------------------------------------------------- 
+## MDES = 0.2 (with power = 80) 
+## power = 0.799 (for ES = 0.2) 
+## --------------------------------------------------- 
+## []: point constrained (fixed) 
+## &lt;&lt;: bound constrained 
+## Regression discontinuity design</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co"># CRD w/ quadratic score variable interacting with the treatment</span></a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="kw">cosa.crd2</span>(<span class="dt">order =</span> <span class="dv">2</span>, <span class="dt">interaction =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb19-3" title="3">          <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>,  </a>
+<a class="sourceLine" id="cb19-4" title="4">          <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
+<a class="sourceLine" id="cb19-5" title="5">          <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
+<a class="sourceLine" id="cb19-6" title="6">          <span class="dt">g2 =</span> <span class="dv">1</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
+<a class="sourceLine" id="cb19-7" title="7">          <span class="dt">p =</span> <span class="fl">.389</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
+<pre><code>## 
+## RDDE for normal distribution 
+##  based on population moments--------------------------------------- 
+## Polynomial order = 2 
+## Interaction w/ treatment = TRUE 
+## Treat if score &lt; cutoff = TRUE 
+## Cutoff = -0.282 | p = 0.389 
+## RDDE = 4.994 
+## 
+## Solution converged with SLSQP 
+## 
+## Rounded solution: 
+## --------------------------------------------------- 
+##  [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
+##    24 689 0.389 74188  0.2   0.06   0.34     0.8
 ## --------------------------------------------------- 
 ## Per unit marginal costs: 
 ##  Level 1 treatment: 5 
@@ -571,62 +650,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## --------------------------------------------------- 
 ## []: point constrained (fixed) 
 ## &lt;&lt;: bound constrained 
-## RD design w/ linear functional form</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co"># CRD w/ linear + quadratic score variable</span></a>
-<a class="sourceLine" id="cb19-2" title="2"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb19-3" title="3">            <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>,  </a>
-<a class="sourceLine" id="cb19-4" title="4">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb19-5" title="5">            <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb19-6" title="6">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>,</a>
-<a class="sourceLine" id="cb19-7" title="7">            <span class="dt">p =</span> <span class="fl">.386</span>, <span class="dt">n1 =</span> <span class="dv">24</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with SLSQP 
-## 
-## Rounded solution: 
-## --------------------------------------------------- 
-##  [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
-##    24 389 0.386 41752  0.2   0.06   0.34     0.8
-## --------------------------------------------------- 
-## Per unit marginal costs: 
-##  Level 1 treatment: 5 
-##  Level 1 control: 2 
-##  Level 2 treatment: 50 
-##  Level 2 control: 20 
-## --------------------------------------------------- 
-## MDES = 0.2 (with power = 80) 
-## power = 0.8 (for ES = 0.2) 
-## --------------------------------------------------- 
-## []: point constrained (fixed) 
-## &lt;&lt;: bound constrained 
-## RD design w/ linear + quadratic functional form</code></pre>
-</div>
-<div id="balanced-case-in-crts" class="section level2">
-<h2>Balanced Case in CRTs</h2>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="co"># fix &#39;p = .50&#39; to inpsect cost for the balanced case</span></a>
-<a class="sourceLine" id="cb21-2" title="2"><span class="kw">cosa.crd2r2</span>(<span class="dt">order =</span> <span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb21-3" title="3">            <span class="dt">constrain =</span> <span class="st">&quot;power&quot;</span>, <span class="dt">power =</span> <span class="fl">.80</span>, </a>
-<a class="sourceLine" id="cb21-4" title="4">            <span class="dt">cn1 =</span> <span class="kw">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="dt">cn2 =</span> <span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">20</span>),</a>
-<a class="sourceLine" id="cb21-5" title="5">            <span class="dt">es =</span> <span class="fl">.20</span>, <span class="dt">rho2 =</span> <span class="fl">.20</span>,</a>
-<a class="sourceLine" id="cb21-6" title="6">            <span class="dt">g2 =</span> <span class="dv">5</span>, <span class="dt">r21 =</span> <span class="fl">.20</span>, <span class="dt">r22 =</span> <span class="fl">.30</span>, </a>
-<a class="sourceLine" id="cb21-7" title="7">            <span class="dt">p =</span> <span class="fl">.50</span>, <span class="dt">n1 =</span> <span class="dv">20</span>,  <span class="dt">n2 =</span> <span class="ot">NULL</span>)</a></code></pre></div>
-<pre><code>## Solution converged with SLSQP 
-## 
-## Rounded solution: 
-## --------------------------------------------------- 
-##  [n1]  n2   [p]  cost mdes 95%lcl 95%ucl [power]
-##    20 137 0.496 14340  0.2   0.06   0.34     0.8
-## --------------------------------------------------- 
-## Per unit marginal costs: 
-##  Level 1 treatment: 5 
-##  Level 1 control: 2 
-##  Level 2 treatment: 50 
-##  Level 2 control: 20 
-## --------------------------------------------------- 
-## MDES = 0.2 (with power = 80) 
-## power = 0.8 (for ES = 0.2) 
-## --------------------------------------------------- 
-## []: point constrained (fixed) 
-## &lt;&lt;: bound constrained 
-## Random assignment design w/o score</code></pre>
+## Regression discontinuity design</code></pre>
 <p>–o–</p>
 </div>
 

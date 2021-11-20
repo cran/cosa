@@ -21,10 +21,10 @@
 }
 
 # constrained optimal sample allocation
-.cosa <- function(cn1 = 0, cn2 = 0, cn3 = 0, cn4 = 0, cost = NULL,
+.cosa <- function(order = 2, interaction = FALSE,
+                  cn1 = 0, cn2 = 0, cn3 = 0, cn4 = 0, cost = NULL,
                   n1 = NULL, n2 = NULL, n3 = NULL, n4 = NULL, p = NULL, n0, p0,
                   constrain, local.solver = c("LBFGS", "SLSQP", "MMA", "COBYLA"),
-                  order = 2, # score = NULL, rhots = NULL, k1 = -6, k2 = 6, dists = "normal",
                   power = .80, es = .25, alpha = .05, two.tailed = TRUE,
                   rho2, rho3, rho4, omega2, omega3, omega4,
                   g1 = 0, g2 = 0, g3 = 0, g4 = 0,
@@ -42,13 +42,11 @@
   lb <- get("lb", parent.frame())
   fun <- get("fun", parent.frame())
 
-  # d <- .d(p = p, k1 = k1, k2 = k2, dists = dists, rhots = rhots)
-
   fun_parsed <- scan(text = fun, what = "character", sep=".", quiet = TRUE)
   rlevel <- as.numeric(substr(fun, nchar(fun), nchar(fun)))
   nlevels <- as.numeric(substr(fun, nchar(fun)-2, nchar(fun)-2))
 
-  # inequality constraints on cost
+  # equality constraints on cost
   .eq.cost <- function(ss){
     n1 <- ss[1]
     if(nlevels >= 2){
@@ -100,7 +98,7 @@
                      two.tailed = two.tailed)[1] - es))
   }
 
-  #  mdes and power
+  #  MDES and power
   .mlu.pwr <- function(ss){
     n1 <- ss[1]
     if(nlevels >= 2){
@@ -153,7 +151,7 @@
     return(eval(.sse)^2)
   }
 
-  # maximize power
+  # maximize power rate
   .max.pwr <- function(ss){
     n1 <- ss[1]
     if(nlevels >= 2){
@@ -166,7 +164,7 @@
       n4 <- ss[4]
     }
     p <- ss[nlevels + 1]
-    return(abs(.power(es = es,  alpha = alpha,
+    return(abs(.power(es = es, alpha = alpha,
                       sse = eval(.sse), df = eval(.df),
                       two.tailed = two.tailed) - 1))
   }
@@ -184,7 +182,7 @@
       n4 <- ss[4]
     }
     p <- ss[nlevels + 1]
-    return(.power(es = es,  alpha = alpha,
+    return(.power(es = es, alpha = alpha,
                   sse = eval(.sse), df = eval(.df),
                   two.tailed = two.tailed) - .95)
   }
@@ -352,9 +350,9 @@
       stop("Incorrect value for argument 'local.solver'",  call. = FALSE)
     }
 
-    if(local.solver[i] %in% c("MMA", "COBYLA")) {
-      warning("Possibility of a local solution",  call. = FALSE)
-    }
+    #if(local.solver[i] %in% c("MMA", "COBYLA")) {
+    #  warning("Possibility of a local solution",  call. = FALSE)
+    #}
 
     if(constrain == "cost") {
       par0 <- try(nloptr::auglag(x0 = ss0, fn = .min.cost, gr = .cost.jac, heq = .start,
@@ -376,21 +374,21 @@
                        lower = sslb, upper = ssub,
                        control = list(ftol_abs = fabstol, maxeval = maxeval))
 
-    if(round) {
-      if(length(intersect(ss0, round(nlopt.ss$par, 1))) < nlevels - 1){
-        if(nlopt.ss$par[nlevels] %% 1 != 0) {
-          sslb.round <- sslb
-          ssub.round <- ssub
-          ss00.round <- ss00
-          ss00.round[nlevels] <- sslb.round[nlevels] <- ssub.round[nlevels] <- round(nlopt.ss$par[nlevels])
-          nlopt.ss <- nloptr::auglag(x0 = ss00.round, fn = fn.min, heq = fn.constr,
-                             gr = fn.min.jacob, heqjac = fn.constr.jacob,
-                             localsolver = local.solver[i], localtol = localtol,
-                             lower = sslb.round, upper = ssub.round,
-                             control = list(ftol_abs = fabstol, maxeval = maxeval))
-        }
-      }
-    }
+    # if(round) {
+    #   if(length(intersect(ss0, round(nlopt.ss$par, 1))) < nlevels - 1){
+    #     if(nlopt.ss$par[nlevels] %% 1 != 0) {
+    #       sslb.round <- sslb
+    #       ssub.round <- ssub
+    #       ss00.round <- ss00
+    #       ss00.round[nlevels] <- sslb.round[nlevels] <- ssub.round[nlevels] <- round(nlopt.ss$par[nlevels])
+    #       nlopt.ss <- nloptr::auglag(x0 = ss00.round, fn = fn.min, heq = fn.constr,
+    #                          gr = fn.min.jacob, heqjac = fn.constr.jacob,
+    #                          localsolver = local.solver[i], localtol = localtol,
+    #                          lower = sslb.round, upper = ssub.round,
+    #                          control = list(ftol_abs = fabstol, maxeval = maxeval))
+    #     }
+    #   }
+    # }
 
     if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
       conv <- FALSE
@@ -406,7 +404,6 @@
 
   if(nlopt.ss$convergence < 0 | all(nlopt.ss$par == ss0) | any(nlopt.ss$par <= 0)) {
     stop("Solution is not feasible. Change default settings", call.=FALSE)
-    message("Consider changing starting values, or relaxing some of the sample size constraints, or trying 'round = FALSE'")
   }
 
   col.names <- c(c(ifelse(!is.null(n1), ifelse(length(n1) >= 2, "<n1<", "[n1]"),"n1"),
@@ -457,13 +454,11 @@
     nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
     fun <- paste("mdes", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
-    if(is.null(score)) {
-      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
-             parms$dists  <- "normal", parms$dists <- "uniform")
-    } else {
-      parms$score <- score
+    if(x$parms$dists == "empirical") {
+      ifelse(is.null(score),
+             stop("Score object is missing", call. = FALSE),
+             parms$score <- score)
     }
-
     parms$p <- x$cosa[nlevels + 1]
     parms$n1 <- x$cosa[1]
     if(nlevels >= 2) {
@@ -477,7 +472,7 @@
     }
     return(invisible(do.call(fun, parms)))
   }else{
-    stop("x should be an object returned from COSA functions", call.=FALSE)
+    stop("x should be an object returned from BCOSSA functions", call.=FALSE)
   }
 }
 
@@ -487,11 +482,10 @@
     nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
     fun <- paste("power", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
-    if(is.null(score)) {
-      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
-             parms$dists  <- "normal", parms$dists <- "uniform")
-    } else {
-      parms$score <- score
+    if(x$parms$dists == "empirical") {
+      ifelse(is.null(score),
+             stop("Score object is missing", call. = FALSE),
+             parms$score <- score)
     }
     parms$p <- x$cosa[nlevels + 1]
     parms$n1 <- x$cosa[1]
@@ -506,7 +500,7 @@
     }
     return(invisible(do.call(fun, parms)))
   }else{
-    stop("x should be an object returned from COSA functions", call.=FALSE)
+    stop("x should be an object returned from BCOSSA functions", call.=FALSE)
   }
 }
 
@@ -514,11 +508,10 @@
   if(inherits(x, "power")){
     fun <- paste("mdes", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
-    if(is.null(score)) {
-      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
-             parms$dists  <- "normal", parms$dists <- "uniform")
-    } else {
-      parms$score <- score
+    if(x$parms$dists == "empirical") {
+      ifelse(is.null(score),
+             stop("Score object is missing", call. = FALSE),
+             parms$score <- score)
     }
     parms$power <- x$power
     return(invisible(do.call(fun, parms)))
@@ -531,11 +524,10 @@
   if(inherits(x, "mdes")){
     fun <- paste("power", class(x)[2], sep = ".")
     parms <- x$parms[intersect(names(x$parms), names(formals(fun)))]
-    if(is.null(score)) {
-      ifelse(x$parms$dists == "empirical" | x$parms$dists == "normal",
-             parms$dists  <- "normal", parms$dists <- "uniform")
-    } else {
-      parms$score <- score
+    if(x$parms$dists == "empirical") {
+      ifelse(is.null(score),
+             stop("Score object is missing", call. = FALSE),
+             parms$score <- score)
     }
     parms$es<- x$mdes[1]
     return(invisible(do.call(fun, parms)))

@@ -1,44 +1,48 @@
 # summarize mdes output
 .summary.mdes <- function(object, ...) {
+
   order <- as.character(get("order", parent.frame()))
-  fun.form <- switch(order,
-                     "0" = "Random assignment design w/o score",
-                     "1" = "RD design w/ linear functional form",
-                     "2" = "RD design w/ linear + quadratic functional form")
+  score.info <- switch(order,
+                     "0" = "Random assignment design",
+                     "Regression discontinuity design")
+
   cat("\nMinimum detectable effect size: \n--------------------------------------- \n",
       round(object$mdes[1], 3), " ", 100 * (1 - round(object$parms$alpha, 2)),
       "% CI [", round(object$mdes[2], 3), ",", round(object$mdes[3], 3), "]",
       "\n---------------------------------------\nDegrees of freedom: ", object$df,
-      "\nStandardized standard error: ", round(object$sse, 3), "\nType I error rate: ", object$parms$alpha,
+      "\nStandardized standard error: ", round(object$sse, 3), "\nType I error rate: ", round(object$parms$alpha, 3),
       "\nType II error rate: ", round(1 - object$parms$power, 3), "\nTwo-tailed test: ", object$parms$two.tailed,
-      "\n--------------------------------------- \n", fun.form,
+      "\n--------------------------------------- \n", score.info,
       "\n", sep = "")
 }
 
 # summarize power output
 .summary.power <- function(object, ...) {
-  order <- as.character(get("order", parent.frame()))
-  fun.form <- switch(order,
-                     "0" = "Random assignment design w/o score",
-                     "1" = "RD design w/ linear functional form",
-                     "2" = "RD design w/ linear + quadratic functional form")
-  mlu <- .mdes(power = object$power, alpha = object$parms$alpha,
+
+   order <- as.character(get("order", parent.frame()))
+   score.info <- switch(order,
+                        "0" = "Random assignment design",
+                        "Regression discontinuity design")
+
+   mlu <- .mdes(power = object$power, alpha = object$parms$alpha,
                sse = object$sse, df = object$df, two.tailed = object$parms$two.tailed)
-  cat("\nStatistical power: \n--------------------------------------- \n ",
+
+   cat("\nStatistical power: \n--------------------------------------- \n ",
       round(object$power, 3),
       "\n--------------------------------------- \nDegrees of freedom: ", object$df,
       "\nStandardized standard error: ", round(object$sse, 3), "\nType I error rate: ", object$parms$alpha,
       "\nType II error rate: ", round(1 - object$power, 3), "\nTwo-tailed test: ", object$parms$two.tailed,
-      "\n--------------------------------------- \n", fun.form,
+      "\n--------------------------------------- \n", score.info,
       "\n", sep = "")
 }
 
 .summary.cosa <- function(object, ...) {
+
   order <- as.character(get("order", parent.frame()))
-  fun.form <- switch(order,
-                     "0" = "Random assignment design w/o score",
-                     "1" = "RD design w/ linear functional form",
-                     "2" = "RD design w/ linear + quadratic functional form")
+  score.info <- switch(order,
+                       "0" = "Random assignment design",
+                       "Regression discontinuity design")
+
   design <- class(object)[2]
   rlevel <- as.numeric(substr(design, nchar(design), nchar(design)))
   nlevels <- as.numeric(substr(design, nchar(design) - 2, nchar(design) - 2))
@@ -84,5 +88,5 @@
   cat("--------------------------------------------------- \nMDES = ", round(object$cosa[nlevels + 3], 3),
       " (with power = ", round(object$parms$power, 3)*100, ") \npower = ", round(object$cosa[nlevels + 6], 3),
       " (for ES = ", round(object$parms$es, 3), ") \n--------------------------------------------------- \n",
-      "[]: point constrained (fixed) \n<<: bound constrained \n", fun.form, "\n", sep = "")
+      "[]: point constrained (fixed) \n<<: bound constrained \n", score.info, "\n", sep = "")
 }

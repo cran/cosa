@@ -1,23 +1,27 @@
 # function to vectorize COSA solutions
-vectorize.cosa <- function(design, args.grid, args.names = NULL, ordered = TRUE, ncase = 10L) {
+vectorize.cosa <- function(x, score = NULL, args.grid, args.names = NULL, ordered = TRUE, ncase = 10L) {
 
   args.grid <- as.matrix(args.grid)
   n.cases <- nrow(args.grid)
   n.args <- ncol(args.grid)
-  n.cosa <- length(design$cosa)
+  n.cosa <- length(x$cosa)
 
   if(is.null(args.names)) {
     if(isTRUE("Var" %in% substr(colnames(args.grid), start = 1, stop = 3))) {
       stop("Invalid argument names", call. = FALSE)
     } else {
       args.names <- colnames(args.grid)
+      if(any(!args.names %in% c("p", "r21", "r22", "r23", "r24", "r2t2", "r2t3", "r2t4",
+                                "rho2", "rho3", "rho4", "omega2", "omega3", "omega4"))) {
+        stop("BCOSSA functions can be vectorized over 'p' and/or any of the standardized variance parameters", call. = FALSE)
+      }
     }
   }
 
-  if(inherits(design, "cosa")){
+  if(inherits(x, "cosa")){
 
-    fun <- paste(class(design), collapse = ".")
-    parms <- design$parms
+    fun <- paste(class(x), collapse = ".")
+    parms <- x$parms
 
     out <- matrix(ncol = n.cosa + n.args, nrow = n.cases)
 
@@ -33,8 +37,14 @@ vectorize.cosa <- function(design, args.grid, args.names = NULL, ordered = TRUE,
       message("To reduce the vectorization time specify 'round = FALSE' in the main function")
     }
 
-    if(n.cases > 50) {
-      # to estimate lapsed time
+    if(x$parms$dists == "empirical") {
+      ifelse(is.null(score),
+             stop("Score object is missing", call. = FALSE),
+             parms$score <- score)
+    }
+
+    # to estimate lapsed time
+    if(n.cases > 1) {
       t1 <- Sys.time()
       capture.output(do.call(fun, parms))
       lapsed <- Sys.time() - t1
@@ -43,7 +53,6 @@ vectorize.cosa <- function(design, args.grid, args.names = NULL, ordered = TRUE,
     }
 
     if(all(!is.na(match(args.names, names(parms))))){
-
       for(i in 1:n.cases){
         parms[args.names] <- out[i, 1:n.args] <- args.grid[i,]
         capture.output({
@@ -57,7 +66,7 @@ vectorize.cosa <- function(design, args.grid, args.names = NULL, ordered = TRUE,
       }
 
       out <- cbind(1:n.cases, out)
-      colnames(out) <- c("case", args.names, colnames(design$cosa))
+      colnames(out) <- c("case", args.names, colnames(x$cosa))
 
       if(isTRUE(ordered)){
         out <- switch(parms$constrain,
@@ -94,5 +103,4 @@ vectorize.cosa <- function(design, args.grid, args.names = NULL, ordered = TRUE,
     stop("Only objects from COSA functions can be vectorized", call. = FALSE)
 
   }
-
 }
